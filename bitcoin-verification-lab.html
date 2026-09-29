@@ -1,0 +1,2646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bitcoin Verification Lab 🔬</title>
+<style>
+  :root {
+    --bg: #0b0e14;
+    --card-bg: #131820;
+    --card-border: #1e2a3a;
+    --orange: #f7931a;
+    --orange-dim: #b86d10;
+    --green: #00e5a0;
+    --green-dim: #00a573;
+    --blue: #4fc3f7;
+    --purple: #b388ff;
+    --red: #ff5252;
+    --text: #e0e6ed;
+    --text-dim: #8899aa;
+    --text-bright: #ffffff;
+    --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: #2a3a4a; border-radius: 4px; }
+
+  /* HEADER */
+  .hero {
+    text-align: center;
+    padding: 50px 20px 30px;
+    background: linear-gradient(180deg, #0f1a2e 0%, var(--bg) 100%);
+    border-bottom: 1px solid var(--card-border);
+  }
+  .hero-badge {
+    display: inline-block;
+    background: var(--orange);
+    color: #0b0e14;
+    font-weight: 700;
+    font-size: 0.8rem;
+    padding: 4px 16px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 16px;
+  }
+  .hero h1 {
+    font-size: clamp(2rem, 6vw, 3.5rem);
+    font-weight: 800;
+    color: var(--text-bright);
+    margin-bottom: 8px;
+  }
+  .hero h1 span { color: var(--orange); }
+  .hero .subtitle {
+    font-size: clamp(1rem, 2.5vw, 1.3rem);
+    color: var(--text-dim);
+    max-width: 700px;
+    margin: 0 auto 12px;
+  }
+  .hero .tagline {
+    font-size: 0.95rem;
+    color: var(--green);
+    background: rgba(0,229,160,0.1);
+    display: inline-block;
+    padding: 6px 20px;
+    border-radius: 8px;
+    border: 1px solid rgba(0,229,160,0.2);
+  }
+
+  /* PROGRESS */
+  .progress-section {
+    max-width: 1000px;
+    margin: 20px auto;
+    padding: 0 20px;
+  }
+  .progress-bar-bg {
+    background: var(--card-bg);
+    border-radius: 12px;
+    height: 28px;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--card-border);
+  }
+  .progress-bar-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--green-dim), var(--green));
+    border-radius: 12px;
+    transition: width 0.6s ease;
+  }
+  .progress-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.8rem;
+    color: var(--text-bright);
+  }
+
+  /* LABELS ROW */
+  .progress-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    padding: 0 4px;
+  }
+
+  /* LIVE TICKER */
+  .live-ticker {
+    max-width: 1000px;
+    margin: 14px auto 0;
+    padding: 12px 18px;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 22px;
+    font-size: 0.85rem;
+  }
+  .live-ticker .ticker-item { display: flex; align-items: baseline; gap: 6px; }
+  .live-ticker .ticker-label {
+    color: var(--text-dim);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .live-ticker .ticker-value {
+    color: var(--text-bright);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .live-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(0,229,160,0.12);
+    border: 1px solid rgba(0,229,160,0.3);
+    color: var(--green);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .live-badge .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: pulse 1.8s infinite;
+  }
+  .live-badge.offline {
+    background: rgba(255,82,82,0.1);
+    border-color: rgba(255,82,82,0.3);
+    color: var(--red);
+  }
+  .live-badge.offline .dot { animation: none; }
+
+  /* CONTAINER */
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+
+  /* HOW TO USE */
+  .how-to-use {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 24px 30px;
+    margin-bottom: 40px;
+  }
+  .how-to-use h2 {
+    color: var(--orange);
+    margin-bottom: 12px;
+    font-size: 1.2rem;
+  }
+  .how-to-use ol {
+    padding-left: 20px;
+    color: var(--text-dim);
+  }
+  .how-to-use ol li { margin-bottom: 6px; }
+  .how-to-use ol li strong { color: var(--text); }
+
+  /* VERIFICATION GRID */
+  .verification-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+
+  /* CARD */
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+  .card.verified {
+    border-color: var(--green);
+    box-shadow: 0 0 30px rgba(0,229,160,0.08);
+  }
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 24px 28px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .card-header .num {
+    background: var(--orange);
+    color: #0b0e14;
+    font-weight: 800;
+    font-size: 0.85rem;
+    min-width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .card-header .icon { font-size: 2rem; flex-shrink: 0; }
+  .card-header .card-title {
+    flex: 1;
+  }
+  .card-header .card-title h3 {
+    font-size: 1.15rem;
+    color: var(--text-bright);
+  }
+  .card-header .card-title .claim {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+  }
+  .card-header .check-wrap {
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    border: 2px solid var(--text-dim);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    transition: all 0.3s;
+    cursor: pointer;
+  }
+  .card-header .check-wrap.done {
+    border-color: var(--green);
+    background: var(--green);
+    color: #0b0e14;
+  }
+  .card-body {
+    padding: 0 28px 24px;
+    display: none;
+  }
+  .card.open .card-body { display: block; }
+
+  /* INTERACTIVE DEMO */
+  .demo-box {
+    background: rgba(247,147,26,0.05);
+    border: 1px solid rgba(247,147,26,0.15);
+    border-radius: 12px;
+    padding: 20px;
+    margin: 16px 0;
+  }
+  .demo-box h4 {
+    color: var(--orange);
+    font-size: 0.95rem;
+    margin-bottom: 12px;
+  }
+
+  /* CODE DISPLAY */
+  .code-block {
+    background: #0d1117;
+    border: 1px solid #1e2a3a;
+    border-radius: 10px;
+    padding: 16px 18px;
+    font-family: 'Cascadia Code', 'Fira Code', 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    line-height: 1.7;
+    overflow-x: auto;
+    margin: 12px 0;
+    position: relative;
+  }
+  .code-block .comment { color: #8b949e; }
+  .code-block .keyword { color: #ff7b72; }
+  .code-block .func { color: #d2a8ff; }
+  .code-block .num { color: #79c0ff; }
+  .code-block .str { color: #a5d6ff; }
+  .code-block .type { color: #ffa657; }
+  .code-block .highlight-line {
+    background: rgba(247,147,26,0.1);
+    border-left: 3px solid var(--orange);
+    padding-left: 12px;
+    display: block;
+  }
+  .code-block .highlight-line-green {
+    background: rgba(0,229,160,0.08);
+    border-left: 3px solid var(--green);
+    padding-left: 12px;
+    display: block;
+  }
+
+  /* CODE EXPLANATION */
+  .code-explain {
+    background: rgba(79,195,247,0.05);
+    border: 1px solid rgba(79,195,247,0.15);
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin: 12px 0;
+  }
+  .code-explain p { font-size: 0.9rem; margin-bottom: 6px; }
+  .code-explain p:last-child { margin-bottom: 0; }
+  .code-explain .label {
+    display: inline-block;
+    background: rgba(79,195,247,0.15);
+    color: var(--blue);
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 1px 8px;
+    border-radius: 4px;
+    margin-right: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* SUPPLY CLOCK */
+  .supply-clock {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 0;
+  }
+  .supply-clock .big-number {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--orange);
+    font-variant-numeric: tabular-nums;
+  }
+  .supply-clock .cap-number {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-dim);
+  }
+  .supply-clock .supply-bar {
+    width: 100%;
+    max-width: 400px;
+    height: 16px;
+    background: #0d1117;
+    border-radius: 8px;
+    margin: 12px 0;
+    overflow: hidden;
+    border: 1px solid var(--card-border);
+  }
+  .supply-clock .supply-bar-fill {
+    height: 100%;
+    width: 99.3%;
+    background: linear-gradient(90deg, var(--orange-dim), var(--orange));
+    border-radius: 8px;
+    transition: width 1s ease;
+  }
+  .supply-clock .supply-labels {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 400px;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+  }
+
+  /* BLOCKCHAIN VISUAL */
+  .chain-visual {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 10px 0;
+  }
+  .block {
+    background: #0d1117;
+    border: 2px solid var(--card-border);
+    border-radius: 10px;
+    padding: 12px 18px;
+    width: 100%;
+    max-width: 500px;
+    transition: all 0.4s;
+    position: relative;
+  }
+  .block .block-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+  }
+  .block .block-hash {
+    font-family: monospace;
+    font-size: 0.75rem;
+    color: var(--green);
+    word-break: break-all;
+    transition: color 0.4s;
+  }
+  .block .block-data {
+    font-size: 0.8rem;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .block.tainted {
+    border-color: var(--red);
+    box-shadow: 0 0 20px rgba(255,82,82,0.15);
+  }
+  .block.tainted .block-hash { color: var(--red); }
+  .block .block-link {
+    text-align: center;
+    font-size: 1.2rem;
+    color: var(--text-dim);
+    margin: 2px 0;
+  }
+  .hack-btn {
+    background: var(--red);
+    color: white;
+    border: none;
+    padding: 4px 14px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    font-weight: 600;
+    transition: opacity 0.2s;
+  }
+  .hack-btn:hover { opacity: 0.85; }
+  .reset-btn {
+    background: var(--blue);
+    color: #0b0e14;
+    border: none;
+    padding: 6px 18px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    font-weight: 600;
+    margin-top: 12px;
+    transition: opacity 0.2s;
+  }
+  .reset-btn:hover { opacity: 0.85; }
+  .chain-alert {
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-top: 12px;
+    font-size: 0.9rem;
+    text-align: center;
+    font-weight: 600;
+  }
+  .chain-alert.danger {
+    background: rgba(255,82,82,0.1);
+    border: 1px solid rgba(255,82,82,0.3);
+    color: var(--red);
+  }
+  .chain-alert.safe {
+    background: rgba(0,229,160,0.1);
+    border: 1px solid rgba(0,229,160,0.3);
+    color: var(--green);
+  }
+
+  /* SEED SECURITY */
+  .seed-demo {
+    text-align: center;
+    padding: 10px 0;
+  }
+  .seed-demo .entropy-number {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--purple);
+    word-break: break-all;
+    font-variant-numeric: tabular-nums;
+    margin-bottom: 8px;
+  }
+  .seed-demo .comparison-list {
+    list-style: none;
+    padding: 0;
+    margin: 12px 0;
+  }
+  .seed-demo .comparison-list li {
+    background: rgba(179,136,255,0.06);
+    border: 1px solid rgba(179,136,255,0.12);
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    text-align: left;
+  }
+  .seed-demo .comparison-list li .stat {
+    color: var(--purple);
+    font-weight: 700;
+  }
+  .seed-demo .comparison-list li .fa-icon { margin-right: 8px; }
+
+  /* DIFFICULTY */
+  .difficulty-demo {
+    padding: 10px 0;
+  }
+  .diff-formula {
+    text-align: center;
+    padding: 16px;
+    background: rgba(247,147,26,0.06);
+    border-radius: 10px;
+    margin: 12px 0;
+  }
+  .diff-formula .formula {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-bright);
+    font-family: 'Segoe UI', sans-serif;
+  }
+  .diff-formula .formula span { color: var(--orange); }
+  .diff-slider-wrap label {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+  }
+  .diff-slider-wrap input[type=range] {
+    width: 100%;
+    -webkit-appearance: none;
+    height: 6px;
+    background: var(--card-border);
+    border-radius: 3px;
+    outline: none;
+  }
+  .diff-slider-wrap input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--orange);
+    cursor: pointer;
+  }
+  .diff-result {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 16px 0;
+  }
+  .diff-result .stat-box {
+    text-align: center;
+    background: #0d1117;
+    border-radius: 10px;
+    padding: 12px 20px;
+    border: 1px solid var(--card-border);
+    flex: 1;
+    min-width: 120px;
+  }
+  .diff-result .stat-box .num {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text-bright);
+  }
+  .diff-result .stat-box .lbl {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+  }
+
+  /* HALVING TIMELINE */
+  .halving-chart {
+    padding: 10px 0;
+  }
+  .halving-chart .bar-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 4px;
+    font-size: 0.8rem;
+  }
+  .halving-chart .bar-row .era-label {
+    min-width: 90px;
+    color: var(--text-dim);
+    text-align: right;
+  }
+  .halving-chart .bar-row .bar {
+    height: 20px;
+    border-radius: 4px;
+    transition: width 0.5s;
+    position: relative;
+  }
+  .halving-chart .bar-row .bar span {
+    position: absolute;
+    left: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.7rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .halving-chart .bar-row .current-arrow {
+    color: var(--orange);
+    font-weight: 700;
+    margin-left: 6px;
+  }
+
+  /* VERIFICATION STEPS */
+  .verify-steps {
+    background: rgba(0,229,160,0.04);
+    border: 1px solid rgba(0,229,160,0.12);
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin: 16px 0;
+  }
+  .verify-steps h4 {
+    color: var(--green);
+    font-size: 0.95rem;
+    margin-bottom: 10px;
+  }
+  .verify-steps ol {
+    padding-left: 18px;
+    font-size: 0.9rem;
+  }
+  .verify-steps ol li { margin-bottom: 6px; }
+  .verify-steps ol li strong { color: var(--text-bright); }
+
+  /* AI VERIFY BUTTON */
+  .ai-verify-wrap {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 16px 0;
+  }
+  .ai-btn {
+    background: linear-gradient(135deg, #6a1b9a, #9c27b0);
+    color: white;
+    border: none;
+    padding: 10px 22px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font);
+  }
+  .ai-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(156,39,176,0.3);
+  }
+  .ai-btn.copied {
+    background: var(--green);
+    color: #0b0e14;
+  }
+  .ai-prompt-box {
+    background: #0d1117;
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    line-height: 1.6;
+    margin-top: 8px;
+    display: none;
+    position: relative;
+  }
+  .ai-prompt-box.show { display: block; }
+  .ai-prompt-box .prompt-text {
+    color: var(--text);
+    font-style: italic;
+  }
+
+  /* FUN SECTION */
+  .fun-fact {
+    display: inline-block;
+    background: rgba(247,147,26,0.08);
+    border-radius: 6px;
+    padding: 4px 12px;
+    font-size: 0.75rem;
+    color: var(--orange);
+    margin-bottom: 8px;
+  }
+  .glow-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 6px;
+    animation: pulse 2s infinite;
+  }
+  .glow-dot.green { background: var(--green); }
+  .glow-dot.orange { background: var(--orange); }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* RESPONSIVE */
+  @media (min-width: 768px) {
+    .verification-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  /* FOOTER */
+  .footer {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-dim);
+    font-size: 0.85rem;
+    border-top: 1px solid var(--card-border);
+    margin-top: 40px;
+  }
+  .footer a { color: var(--orange); text-decoration: none; }
+  .footer a:hover { text-decoration: underline; }
+
+  /* MONEY SCORECARD */
+  .money-scorecard {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 12px 0;
+    font-size: 0.82rem;
+  }
+  .money-scorecard thead th {
+    background: #0d1117;
+    padding: 10px 12px;
+    text-align: center;
+    font-weight: 700;
+    border-bottom: 2px solid var(--card-border);
+  }
+  .money-scorecard thead th:first-child { text-align: left; }
+  .money-scorecard tbody td {
+    padding: 10px 12px;
+    text-align: center;
+    border-bottom: 1px solid var(--card-border);
+    vertical-align: middle;
+  }
+  .money-scorecard tbody td:first-child {
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-bright);
+  }
+  .money-scorecard tbody tr:hover {
+    background: rgba(247,147,26,0.04);
+  }
+  .money-scorecard tbody tr:last-child td { border-bottom: none; }
+  .score-badge {
+    display: inline-block;
+    padding: 2px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+  .score-badge.perfect { background: rgba(0,229,160,0.15); color: var(--green); }
+  .score-badge.good { background: rgba(79,195,247,0.12); color: var(--blue); }
+  .score-badge.ok { background: rgba(247,147,26,0.12); color: var(--orange); }
+  .score-badge.poor { background: rgba(255,82,82,0.12); color: var(--red); }
+
+  .money-verdict {
+    background: rgba(179,136,255,0.06);
+    border: 1px solid rgba(179,136,255,0.15);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin: 12px 0;
+    text-align: center;
+  }
+  .money-verdict .verdict-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--purple);
+    margin-bottom: 4px;
+  }
+
+  .prop-slider-wrap { margin: 12px 0; }
+  .prop-btn-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 10px 0;
+  }
+  .prop-btn {
+    background: #0d1117;
+    border: 1px solid var(--card-border);
+    color: var(--text-dim);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    cursor: pointer;
+    font-family: var(--font);
+    transition: all 0.2s;
+    font-weight: 500;
+  }
+  .prop-btn:hover {
+    border-color: var(--orange);
+    color: var(--orange);
+  }
+  .prop-btn.active {
+    background: rgba(247,147,26,0.12);
+    border-color: var(--orange);
+    color: var(--orange);
+  }
+  .prop-detail-box {
+    background: #0d1117;
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin: 8px 0;
+    display: none;
+  }
+  .prop-detail-box.show { display: block; }
+  .prop-detail-box h4 { font-size: 0.9rem; margin-bottom: 6px; }
+  .prop-detail-box .comparison-mini {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  .prop-detail-box .comparison-mini > div {
+    flex: 1;
+    min-width: 140px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--card-border);
+    font-size: 0.82rem;
+  }
+  .prop-detail-box .comparison-mini .bitcoin-score { border-color: rgba(247,147,26,0.3); background: rgba(247,147,26,0.04); }
+  .prop-detail-box .comparison-mini .gold-score { border-color: rgba(255,215,0,0.3); background: rgba(255,215,0,0.04); }
+  .prop-detail-box .comparison-mini .fiat-score { border-color: rgba(255,82,82,0.15); background: rgba(255,82,82,0.03); }
+  .expando-btn {
+    background: transparent;
+    border: 1px solid var(--card-border);
+    color: var(--text-dim);
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-family: var(--font);
+    transition: all 0.2s;
+  }
+  .expando-btn:hover {
+    border-color: var(--orange);
+    color: var(--orange);
+  }
+  .expando-content {
+    display: none;
+    margin-top: 10px;
+  }
+  .expando-content.open { display: block; }
+
+  /* BONUS CARDS */
+  .bonus-card {
+    background: #0d1117;
+    border-radius: 10px;
+    padding: 16px;
+    border: 1px solid var(--card-border);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    text-align: left;
+    transition: border-color 0.2s;
+  }
+  .bonus-card:hover { border-color: rgba(247,147,26,0.35); }
+  .bonus-card .bonus-icon { font-size: 1.4rem; }
+  .bonus-card h4 { color: var(--text-bright); font-size: 0.95rem; margin: 0; }
+  .bonus-card p { font-size: 0.82rem; color: var(--text-dim); margin: 0; }
+  .bonus-link {
+    font-size: 0.8rem;
+    color: var(--blue);
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .bonus-link:hover { text-decoration: underline; }
+  .ai-btn-sm {
+    background: linear-gradient(135deg, #6a1b9a, #9c27b0);
+    color: white;
+    border: none;
+    padding: 7px 14px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: var(--font);
+    align-self: flex-start;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .ai-btn-sm:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(156,39,176,0.3);
+  }
+  .ai-btn-sm.copied { background: var(--green); color: #0b0e14; }
+
+  /* TOOLTIP */
+  .info-badge {
+    display: inline-block;
+    background: rgba(79,195,247,0.12);
+    color: var(--blue);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    cursor: help;
+  }
+
+  .hash-animation { transition: all 0.5s; }
+</style>
+</head>
+<body>
+
+<!-- ========== HERO ========== -->
+<header class="hero">
+  <div class="hero-badge">🔬 Interactive Lab</div>
+  <h1>Bitcoin <span>Verification</span> Lab</h1>
+  <p class="subtitle">Don't trust. Verify. — Walk through real Bitcoin code, math, and network properties to prove the claims yourself. No coding required.</p>
+  <div class="tagline">⚡ Enter as a skeptic. Leave as your own bank.</div>
+</header>
+
+<!-- ========== PROGRESS ========== -->
+<div class="progress-section">
+  <div class="progress-bar-bg">
+    <div class="progress-bar-fill" id="progressFill"></div>
+    <div class="progress-text" id="progressText">0 / 11 Verified</div>
+  </div>
+  <div class="progress-labels">
+    <span>🔬 11 Experiments</span>
+    <span>🏆 Full Verification Badge</span>
+  </div>
+
+  <div class="live-ticker">
+    <span class="live-badge"><span class="dot"></span>Live</span>
+    <span class="ticker-item"><span class="ticker-label">Block</span> <span class="ticker-value" id="tickHeight">#964,178</span></span>
+    <span class="ticker-item"><span class="ticker-label">Supply</span> <span class="ticker-value" id="tickSupply">20,075,556 BTC</span></span>
+    <span class="ticker-item"><span class="ticker-label">Difficulty</span> <span class="ticker-value" id="tickDifficulty">125.81 T</span></span>
+    <span class="ticker-item"><span class="ticker-label">Next halving</span> <span class="ticker-value" id="tickHalving">~85,822 blocks</span></span>
+    <span class="ticker-item" style="margin-left:auto;"><span class="ticker-label">updates every 60s</span></span>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- ========== HOW TO USE ========== -->
+<div class="how-to-use">
+  <h2>🧪 How This Lab Works</h2>
+  <ol>
+    <li><strong>Open an experiment</strong> — Each one tackles a claim about Bitcoin.</li>
+    <li><strong>Play with the demo</strong> — Interactive tools show you <em>how</em> the claim works.</li>
+    <li><strong>Follow the verification steps</strong> — Simple actions you can take to prove it yourself.</li>
+    <li><strong>Ask an AI</strong> — Click "Verify with AI" to get a prompt you can paste into ChatGPT, Claude, or any AI to double-check the code and math.</li>
+    <li><strong>Check it off</strong> — Click the circle ✓ when you're satisfied. Collect all 11 for full verification!</li>
+  </ol>
+</div>
+
+<div class="verification-grid" id="verificationGrid">
+
+<!-- ============================================ -->
+<!-- EXPERIMENT 1: 21M Supply Cap -->
+<!-- ============================================ -->
+<div class="card" data-claim="supply">
+  <div class="card-header" onclick="toggleCard(this)">
+    <div class="num">1</div>
+    <div class="icon">💰</div>
+    <div class="card-title">
+      <h3>The 21 Million Supply Cap</h3>
+      <div class="claim">"There will only ever be 21 million bitcoin"</div>
+    </div>
+    <div class="check-wrap" onclick="event.stopPropagation();toggleCheck(this)" id="check-supply">✓</div>
+  </div>
+  <div class="card-body">
+    <p style="margin-bottom:12px;">This is the most important claim — and the easiest to verify! The limit isn't a promise; it's <strong>written directly in Bitcoin's source code</strong>, enforced by every single computer running the Bitcoin software.</p>
+
+    <div class="demo-box">
+      <h4>📟 The Actual Bitcoin Code</h4>
+      <p style="font-size:0.85rem;color:var(--text-dim);margin-bottom:10px;">This is real C++ code from <a href="https://github.com/bitcoin/bitcoin/blob/master/src/validation.cpp" target="_blank" style="color:var(--orange);">Bitcoin Core</a>. Every line is public. Anyone can read it.</p>
+      <div class="code-block">
+<span class="keyword">CAmount</span> <span class="func">GetBlockSubsidy</span>(<span class="type">int</span> nHeight, <span class="keyword">const</span> Consensus::Params& consensusParams)
+{
+    <span class="comment">// How many halvings have happened so far?</span>
+    <span class="type">int</span> halvings = nHeight / <span class="num">210000</span>;  <span class="comment">// ← 210,000 blocks = ~4 years</span>
+
+    <span class="comment">// Safety: if halvings goes over 64, reward = 0</span>
+    <span class="keyword">if</span> (halvings >= <span class="num">64</span>)
+        <span class="keyword">return</span> <span class="num">0</span>;
+
+    <span class="comment">// Start at 50 BTC per block</span>
+    <span class="type">CAmount</span> nSubsidy = <span class="num">50</span> * COIN;   <span class="comment">// ← 5,000,000,000 satoshis</span>
+
+    <span class="comment">// The magic line: cut the subsidy in half for each halving</span>
+    <span class="highlight-line">nSubsidy >>= halvings;  <span class="comment">// ← "shift right" = divide by 2 each time</span></span>
+
+    <span class="keyword">return</span> nSubsidy;
+}
+      </div>
+
+      <div class="code-explain">
+        <p><span class="label">Key Line</span> <code style="color:var(--orange);">nSubsidy &gt;&gt;= halvings</code> means: <strong>"Start at 50 BTC, then cut in half every 210,000 blocks"</strong></p>
+        <p><span class="label">The Result</span> If you add up all the block rewards after 32 halvings, the total ≈ <strong>20,999,999.9769 BTC</strong>. The code <em>implicitly</em> creates a 21M cap through the halving math — there is no literal <code>MAX=21000000</code> line, but the exponential decay mathematically <strong>guarantees</strong> it can never exceed ~21M.</p>
+        <p><span class="label">Enforcement</span> Every node checks every block. If a miner tried to mint more than allowed, the block would be <strong>immediately rejected</strong> by the entire network.</p>
+      </div>
+    </div>
+
+    <div class="supply-clock">
+      <div class="big-number" style="color:var(--text-bright);"><span id="liveSupply">20,075,556</span> BTC</div>
+      <div class="cap-number" style="color:var(--text-dim);">mined so far · hard cap: 21,000,000 BTC</div>
+      <div class="supply-bar">
+        <div class="supply-bar-fill" id="supplyBarFill" style="width:95.6%"></div>
+      </div>
+      <div class="supply-labels">
+        <span>0 BTC (2009)</span>
+        <span>21,000,000 BTC (~2140)</span>
+      </div>
+      <p style="font-size:0.8rem;color:var(--text-dim);margin-top:4px;">Current block: <span id="liveHeight">#964,178</span> · live supply data from <a href="https://mempool.space/" target="_blank" style="color:var(--orange);">mempool.space</a>. The last satoshi will be mined around <strong>2140</strong>.</p>
+    </div>
+
+    <div class="verify-steps">
+      <h4>✅ How to Verify This Yourself</h4>
+      <ol>
+        <li><strong>Visit the code:</strong> Go to <a href="https://github.com/bitcoin/bitcoin" target="_blank" style="color:var(--orange);">github.com/bitcoin/bitcoin</a> — no account needed.</li>
+        <li><strong>Search for "GetBlockSubsidy"</strong> in the search bar (top of GitHub).</li>
+        <li><strong>Read it:</strong> You'll see the exact code above. The function controls how much new BTC is created.</li>
+        <li><strong>Do the math:</strong> 50 + 25 + 12.5 + 6.25 + 3.125 + ... = ~100. Each "era" is 210k blocks × the reward. Add them all up and the total is 21M.</li>
+        <li><strong>Optional:</strong> Download Bitcoin Core from <a href="https://bitcoin.org/en/download" target="_blank" style="color:var(--orange);">bitcoin.org</a> and run a full node — your computer independently verifies every block and every coin ever created.</li>
+      </ol>
+    </div>
+
+    <div class="ai-verify-wrap">
+      <button class="ai-btn" onclick="copyAIPrompt('supply')">🤖 Verify with AI — Copy Prompt</button>
+      <button class="expando-btn" onclick="toggleExpando(this)">📋 Show prompt</button>
+    </div>
+    <div class="ai-prompt-box" id="prompt-supply">
+      <p style="font-size:0.8rem;color:var(--text-dim);margin-bottom:6px;">📋 Paste this into ChatGPT, Claude, or any AI:</p>
+      <div class="prompt-text">I want to verify Bitcoin's 21 million supply cap. Here is the GetBlockSubsidy function from Bitcoin Core's source code (C++). Please explain line by line what this code does, how it enforces the supply limit, and confirm whether or not the 21 million cap is mathematically guaranteed. Code:
+
+CAmount GetBlockSubsidy(int nHeight, const Consensus::Params& consensusParams) {
+    int halvings = nHeight / 210000;
+    if (halvings >= 64) return 0;
+    CAmount nSubsidy = 50 * COIN;
+    nSubsidy >>= halvings;
+    return nSubsidy;
+}
+
+Is it true that there will never be more than ~21 million bitcoin, and where specifically in the code is that enforced? Please be thorough and honest about any limitations.</div>
+    </div>
+
+    <p style="font-size:0.8rem;color:var(--text-dim);margin-top:8px;">🔗 <a href="https://github.com/bitcoin/bitcoin/blob/master/src/validation.cpp" target="_blank" style="color:var(--blue);">View on GitHub</a> &nbsp;|&nbsp; <a href="https://www.wolframalpha.com/input?i=Sum%5B210000+*+%2850%2F2%5Ei%29%2C+%7Bi%2C0%2C32%7D%5D" target="_blank" style="color:var(--blue);">WolframAlpha math</a></p>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- EXPERIMENT 2: Immutability (Hash Chain) -->
+<!-- ============================================ -->
+<div class="card" data-claim="immutable">
+  <div class="card-header" onclick="toggleCard(this)">
+    <div class="num">2</div>
+    <div class="icon">🔗</div>
+    <div class="card-title">
+      <h3>Immutability — The Block Chain</h3>
+      <div class="claim">"Once a transaction is confirmed, it cannot be changed or reversed"</div>
+    </div>
+    <div class="check-wrap" onclick="event.stopPropagation();toggleCheck(this)" id="check-immutable">✓</div>
+  </div>
+  <div class="card-body">
+    <p style="margin-bottom:12px;">Each block links to the previous one using a cryptographic fingerprint called a <strong>hash</strong>. If you change <em>anything</em> in a block — even one character — its hash changes, breaking the chain. This makes tampering instantly detectable.</p>
+
+    <div class="demo-box">
+      <h4>🧪 Try to Hack the Blockchain</h4>
+      <p style="font-size:0.85rem;color:var(--text-dim);margin-bottom:12px;">Click <strong>"Try to Hack"</strong> on Block #2 — we'll simulate changing a transaction. Watch what happens to every subsequent block.</p>
+      <div id="chainContainer">
+        <!-- Built by JS -->
+      </div>
+      <div id="chainAlert" class="chain-alert safe">✅ Blockchain intact — all hashes linked properly</div>
+      <button class="reset-btn" onclick="resetChain()">🔄 Reset the Chain</button>
+    </div>
+
+    <div class="code-explain" style="margin:12px 0;">
+      <p><span class="label">Why It Works</span> Each block header contains <code style="color:var(--orange);">hashPrevBlock</code> — the hash of the previous block. This creates an unbreakable chain: you'd have to re-mine every single block from the point of change onward, and do it faster than the entire Bitcoin network. That's <strong>computationally impossible</strong> after just a few confirmations.</p>
+      <p><span class="label">Avalanche Effect</span> Changing one bit in a block produces a completely different hash. There's no way to "predict" or "control" what the new hash will be — it's all or nothing.</p>
+    </div>
+
+    <div class="verify-steps">
+      <h4>✅ How to Verify This Yourself</h4>
+      <ol>
+        <li><strong>Use a block explorer</strong> like <a href="https://mempool.space" target="_blank" style="color:var(--orange);">mempool.space</a>.</li>
+        <li><strong>Click any block</strong> and find the "Previous Block Hash" field.</li>
+        <li><strong>Copy the previous hash</strong> and search for it — it will match the actual previous block's hash.</li>
+        <li><strong>Try this for 5 blocks in a row</strong> — every single one chains to the previous. There's no gap, no break.</li>
+        <li><strong>Deep verification:</strong> Run a full node. Your node independently validates every block and every hash from the genesis block in 2009 to today.</li>
+      </ol>
+    </div>
+
+    <div class="ai-verify-wrap">
+      <button class="ai-btn" onclick="copyAIPrompt('immutable')">🤖 Verify with AI — Copy Prompt</button>
+      <button class="expando-btn" onclick="toggleExpando(this)">📋 Show prompt</button>
+    </div>
+    <div class="ai-prompt-box" id="prompt-immutable">
+      <p style="font-size:0.8rem;color:var(--text-dim);margin-bottom:6px;">📋 Paste this into ChatGPT, Claude, or any AI:</p>
+      <div class="prompt-text">Explain how Bitcoin's blockchain achieves immutability. I want to understand:
+1. What is a cryptographic hash and why is it called a "fingerprint"?
+2. How does each block reference the previous block's hash?
+3. What happens if someone tries to modify a transaction in an old block?
+4. Why does it get exponentially harder to change older blocks?
+5. Is it true that after 6 confirmations (about 1 hour) a Bitcoin transaction is practically irreversible?
+
+Please explain this in simple terms that someone with no technical background can understand. Use analogies if helpful.</div>
+    </div>
+
+    <p style="font-size:0.8rem;color:var(--text-dim);margin-top:8px;">🔗 <a href="https://github.com/bitcoin/bitcoin/blob/master/src/consensus/merkle.cpp" target="_blank" style="color:var(--blue);">Merkle tree code on GitHub</a></p>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- EXPERIMENT 3: Decentralized Network -->
+<!-- ============================================ -->
+<div class="card" data-claim="decentralized">
+  <div class="card-header" onclick="toggleCard(this)">
+    <div class="num">3</div>
+    <div class="icon">🌐</div>
+    <div class="card-title">
+      <h3>Decentralized Network — No Central Server</h3>
+      <div class="claim">"Bitcoin has no central server, company, or government controlling it"</div>
+    </div>
+    <div class="check-wrap" onclick="event.stopPropagation();toggleCheck(this)" id="check-decentralized">✓</div>
+  </div>
+  <div class="card-body">
+    <p style="margin-bottom:12px;">Unlike Facebook, Google, or your bank, Bitcoin has <strong>no CEO, no headquarters, no central database, and no off switch</strong>. Thousands of independent computers (nodes) around the world run the same software and check each other.</p>
+
+    <div class="demo-box">
+      <h4>🌍 The Global Node Network</h4>
+      <div style="display:flex;flex-wrap:wrap;gap:16px;justify-content:center;padding:10px 0;">
+        <div class="diff-result" style="margin:0;">
+          <div class="stat-box">
+            <div class="num" style="font-size:1rem;">No one knows</div>
+            <div class="lbl">Exact Node Count</div>
+          </div>
+          <div class="stat-box">
+            <div class="num">100+</div>
+            <div class="lbl">Countries</div>
+          </div>
+          <div class="stat-box">
+            <div class="num">0</div>
+            <div class="lbl">Single Point of Failure</div>
+          </div>
+        </div>
+      </div>
+
+      <p style="font-size:0.78rem;color:var(--text-dim);text-align:center;margin:4px 0 8px;">There is no official registry of Bitcoin nodes — they're anonymous and don't self-report. Projects like <a href="https://bitnodes.io/" target="_blank" style="color:var(--orange);">bitnodes.io</a> estimate <em>tens of thousands</em> of reachable nodes by scanning the network, and that number changes daily. The true count — including hidden nodes — is unknown, by design. There's no list to ban, no registry to shut down.</p>
+
+      <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:8px 0;">
+        <span style="background:rgba(247,147,26,0.1);padding:4px 12px;border-radius:20px;font-size:0.8rem;color:var(--orange);">🇺🇸 US</span>
+        <span style="background:rgba(247,147,26,0.1);padding:4px 12px;border-radius:20px;font-size:0.8rem;color:var(--orange);">🇩🇪 Germany</span>
+        <span style="background:rgba(247,147,26,0.1);padding:4px 12px;border-radius:20px;font-size:0.8rem;color:var(--orange);">🇫🇷 France</span>
+        <span style="background:rgba(247,147,26,0.1);padding:4px 12px;border-radius:20px;font-size:0.8rem;color:var(--orange);">🇳🇱 Netherlands</span>
+        <span style="background:rgba(247,147,26,0.1);padding:4px 12px;border-radius:20px;font-size:0.8rem;color:var(--orange);">🇨🇦 Canada</span>
+        <span style="background:rgba(247,147,26,0.1);padding:4px 12px;border-radius:20px;font-size:0.8rem;color:var(--orange);">🇸🇬 Singapore</span>
+        <span style="background:rgba(247,147,26,0.1);padding:4px 12px;border-radius:20px;font-size:0.8rem;color:var(--orange);">🇯🇵 Japan</span>
+        <span style="background:rgba(247,147,26,0.1);padding:4px 12px;border-radius:20px;font-size:0.8rem;color:var(--orange);">🇦🇺 Australia</span>
+        <span style="background:rgba(247,147,26,0.1);padding:4px 12px;border-radius:20px;font-size:0.8rem;color:var(--orange);">🇧🇷 Brazil</span>
+        <span style="background:rgba(247,147,26,0.1);padding:4px 12px;border-radius:20px;font-size:0.8rem;color:var(--orange);">🇿🇦 South Africa</span>
+        <span style="background:rgba(247,147,26,0.1);padding:4px 12px;border-radius:20px;font-size:0.8rem;color:var(--orange);">🇮🇳 India</span>
+      </div>
+
+      <div class="code-explain">
+        <p><span class="label">How It Works</span> Bitcoin uses a <strong>peer-to-peer</strong> network. When you send bitcoin, your transaction broadcasts to every node. Each node independently validates it against the same rules. There's no central server that says "yes" or "no."</p>
+        <p><span class="label">The "Attack" Test</span> If any government tried to shut Bitcoin down, they'd need to find and shut down thousands of independently operated nodes in 100+ countries — many running on Tor, in data centers, basements, and laptops. There's no single building to raid.</p>
+        <p><span class="label">Fun fact:</span> You can run a Bitcoin node on a Raspberry Pi ($35 computer) from your living room. If you do, you're a global peer.</p>
+      </div>
+    </div>
+
+    <div class="verify-steps">
+      <h4>✅ How to Verify This Yourself</h4>
+      <ol>
+        <li><strong>Check the live node count:</strong> Visit <a href="https://bitnodes.io/" target="_blank" style="color:var(--orange);">bitnodes.io</a> — a community-powered live count of reachable nodes worldwide.</li>
+        <li><strong>See the geographic spread</strong> — nodes exist on every continent except Antarctica.</li>
+        <li><strong>Run your own node:</strong> Download Bitcoin Core from <a href="https://bitcoin.org/en/download" target="_blank" style="color:var(--orange);">bitcoin.org</a> and run it. Your computer independently validates every rule, from the 21M cap to every transaction. You're now an equal peer on the network.</li>
+        <li><strong>Test censorship:</strong> Use a Tor-enabled wallet to send a transaction. It goes through exactly the same as any other — no one can block it.</li>
+      </ol>
+    </div>
+
+    <div class="ai-verify-wrap">
+      <button class="ai-btn" onclick="copyAIPrompt('decentralized')">🤖 Verify with AI — Copy Prompt</button>
+      <button class="expando-btn" onclick="toggleExpando(this)">📋 Show prompt</button>
+    </div>
+    <div class="ai-prompt-box" id="prompt-decentralized">
+      <p style="font-size:0.8rem;color:var(--text-dim);margin-bottom:6px;">📋 Paste this into ChatGPT, Claude, or any AI:</p>
+      <div class="prompt-text">Explain how Bitcoin is decentralized. I want to understand:
+1. Is there a central server or company that runs Bitcoin?
+2. How do Bitcoin nodes work and how many are there?
+3. Can any government shut down Bitcoin? What would it take?
+4. How do nodes agree on the rules (consensus)?
+5. Can I run a node myself? What equipment do I need?
+6. What stops someone from creating a fake Bitcoin and tricking people?
+
+Explain like I'm 15 years old. Be honest about any centralizing forces (mining pools, developers, etc.) — I want the good and the bad.</div>
+    </div>
+
+    <p style="font-size:0.8rem;color:var(--text-dim);margin-top:8px;">🔗 <a href="https://bitnodes.io/" target="_blank" style="color:var(--blue);">Live Node Map (Bitnodes)</a> &nbsp;|&nbsp; <a href="https://github.com/bitcoin/bitcoin/blob/master/src/net_processing.cpp" target="_blank" style="color:var(--blue);">Network code on GitHub</a></p>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- EXPERIMENT 4: Difficulty Adjustment -->
+<!-- ============================================ -->
+<div class="card" data-claim="difficulty">
+  <div class="card-header" onclick="toggleCard(this)">
+    <div class="num">4</div>
+    <div class="icon">⚡</div>
+    <div class="card-title">
+      <h3>Difficulty Adjustment — Self-Balancing</h3>
+      <div class="claim">"Bitcoin automatically adjusts mining difficulty to keep blocks at 10 minutes"</div>
+    </div>
+    <div class="check-wrap" onclick="event.stopPropagation();toggleCheck(this)" id="check-difficulty">✓</div>
+  </div>
+  <div class="card-body">
+    <p style="margin-bottom:12px;">This is one of Bitcoin's most ingenious features. Every <strong>2,016 blocks</strong> (~2 weeks), every node checks: "Were the last 2,016 blocks found faster or slower than 10 minutes each?" If faster, mining gets harder. If slower, it gets easier. The network <strong>self-balances</strong> automatically.</p>
+
+    <div class="demo-box">
+      <h4>🎮 Slide the Hashrate — See Difficulty Adjust</h4>
+      <p style="font-size:0.85rem;color:var(--text-dim);margin-bottom:10px;">Drag the slider to simulate more or less miners joining the network. Watch how difficulty responds.</p>
+
+      <div class="diff-formula">
+        <div class="formula">New Difficulty = Old Difficulty × <span>Actual Time</span> ÷ <span>Expected Time</span></div>
+        <p style="font-size:0.8rem;color:var(--text-dim);margin-top:6px;">Expected Time = 2,016 blocks × 10 min = <strong>20,160 min (2 weeks)</strong></p>
+      </div>
+
+      <div class="code-explain" style="margin:12px 0;">
+        <p><span class="label" style="background:rgba(0,229,160,0.15);color:var(--green);">Live Network</span> Current difficulty: <strong id="liveDifficulty">125.81 T</strong> · next automatic adjustment in <strong id="liveAdjustBlocks">~1,486</strong> blocks (<span id="liveAdjustPct">26.3%</span> through this 2-week period)</p>
+        <div style="height:8px;background:#0d1117;border-radius:4px;overflow:hidden;border:1px solid var(--card-border);margin-top:8px;">
+          <div id="liveAdjustBar" style="height:100%;width:26.3%;background:linear-gradient(90deg,var(--green-dim),var(--green));transition:width 1s ease;"></div>
+        </div>
+      </div>
+
+      <div class="diff-slider-wrap" style="margin:16px 0;">
+        <label>🚀 Simulated Hashrate: <strong id="hashrateLabel">100 EH/s</strong> <span style="color:var(--text-dim);font-weight:400;">(100 = today's level, ×5 shown above. Real hashrate is ~800+ EH/s)</span></label>
+        <input type="range" id="hashrateSlider" min="10" max="500" value="100" oninput="updateDifficulty()">
+        <div style="display:flex;justify-content:space-between;font-size:0.7rem;color:var(--text-dim);">
+          <span>Very few miners</span>
+          <span>50x more miners</span>
+        </div>
+      </div>
+
+      <div class="diff-result">
+        <div class="stat-box">
+          <div class="num" id="diffActualTime">20,160</div>
+          <div class="lbl">Actual Time (min)</div>
+        </div>
+        <div class="stat-box">
+          <div class="num" id="diffRatio">1.0×</div>
+          <div class="lbl">Adjustment Factor</div>
+        </div>
+        <div class="stat-box">
+          <div class="num" id="diffNewDiff">1</div>
+          <div class="lbl">Relative Difficulty</div>
+        </div>
+      </div>
+      <p style="font-size:0.85rem;color:var(--text-dim);text-align:center;" id="diffExplanation">⚖️ Perfect balance — blocks every 10 minutes</p>
+    </div>
+
+    <div class="code-explain" style="margin:12px 0;">
+      <p><span class="label">The Actual Code</span> In <a href="https://github.com/bitcoin/bitcoin/blob/master/src/pow.cpp" target="_blank" style="color:var(--orange);">src/pow.cpp</a>, the <code style="color:var(--orange);">GetNextWorkRequired()</code> function calculates the new difficulty. The <strong>maximum adjustment per cycle is ±400%</strong> (4× easier or harder) to prevent wild swings. The code is ~60 lines — any programmer can audit it.</p>
+      <p><span class="label">Why It Matters</span> Without difficulty adjustment, miners would find blocks in seconds when price is high (instability) or take days when price is low (transactions never confirm). The adjustment keeps Bitcoin running smoothly whether 10 miners or 10 million.</p>
+    </div>
+
+    <div class="verify-steps">
+      <h4>✅ How to Verify This Yourself</h4>
+      <ol>
+        <li><strong>Check the last adjustment:</strong> Visit <a href="https://mempool.space/graphs/mining/difficulty" target="_blank" style="color:var(--orange);">mempool.space/graphs/mining/difficulty</a>.</li>
+        <li><strong>Look at the history:</strong> Scroll back years — difficulty has gone up and down as miners joined and left. The network never broke.</li>
+        <li><strong>Watch the countdown:</strong> The next adjustment is always visible — every 2,016 blocks, like clockwork.</li>
+        <li><strong>Code verification:</strong> The adjustment code is at <a href="https://github.com/bitcoin/bitcoin/blob/master/src/pow.cpp" target="_blank" style="color:var(--orange);">github.com/bitcoin/bitcoin/src/pow.cpp</a>. You can read every line.</li>
+      </ol>
+    </div>
+
+    <div class="ai-verify-wrap">
+      <button class="ai-btn" onclick="copyAIPrompt('difficulty')">🤖 Verify with AI — Copy Prompt</button>
+      <button class="expando-btn" onclick="toggleExpando(this)">📋 Show prompt</button>
+    </div>
+    <div class="ai-prompt-box" id="prompt-difficulty">
+      <p style="font-size:0.8rem;color:var(--text-dim);margin-bottom:6px;">📋 Paste this into ChatGPT, Claude, or any AI:</p>
+      <div class="prompt-text">Explain Bitcoin's difficulty adjustment mechanism to me in plain language. I want to understand:
+1. How often does difficulty adjust and why 2,016 blocks?
+2. What is the formula? I heard it's: New Difficulty = Old Difficulty × (Actual Time / Expected Time)
+3. What prevents the difficulty from swinging wildly?
+4. Does this mean Bitcoin's block time is always 10 minutes?
+5. Where is this in the actual Bitcoin source code?
+
+Give concrete examples: what happens if 10x more miners join? What if half the miners leave?</div>
+    </div>
+
+    <p style="font-size:0.8rem;color:var(--text-dim);margin-top:8px;">🔗 <a href="https://github.com/bitcoin/bitcoin/blob/master/src/pow.cpp" target="_blank" style="color:var(--blue);">pow.cpp on GitHub</a> &nbsp;|&nbsp; <a href="https://mempool.space/graphs/mining/difficulty" target="_blank" style="color:var(--blue);">Live difficulty chart</a></p>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- EXPERIMENT 5: Seed Phrase Security -->
+<!-- ============================================ -->
+<div class="card" data-claim="seed">
+  <div class="card-header" onclick="toggleCard(this)">
+    <div class="num">5</div>
+    <div class="icon">🔐</div>
+    <div class="card-title">
+      <h3>Seed Phrase Security — Impossible to Guess</h3>
+      <div class="claim">"Your 12-word seed phrase cannot be brute-forced, even by all computers in the universe"</div>
+    </div>
+    <div class="check-wrap" onclick="event.stopPropagation();toggleCheck(this)" id="check-seed">✓</div>
+  </div>
+  <div class="card-body">
+    <p style="margin-bottom:12px;">This sounds unbelievable, but the math is undeniable. A 12-word BIP39 seed phrase uses <strong>2048 possible words</strong> chosen at random. That gives 2048¹² combinations — a number so astronomically large it defeats every computer that could ever exist.</p>
+
+    <div class="demo-box">
+      <h4>🧮 The Numbers Are Mind-Boggling</h4>
+      <div class="seed-demo">
+        <div class="entropy-number" id="entropyDisplay">340,282,366,920,938,463,463,374,607,431,768,211,456</div>
+        <p style="font-size:0.85rem;color:var(--text-dim);">= 2¹²⁸ combinations for a 12-word seed</p>
+
+        <ul class="comparison-list">
+          <li>
+            <span class="stat">5.4 × 10³⁹</span> — 12-word seed combinations (2048¹²)
+          </li>
+          <li>
+            <span class="stat">7.5 × 10¹⁸</span> — Grains of sand on Earth
+          </li>
+          <li>
+            <span class="stat">10⁵⁰</span> — Atoms on Earth
+          </li>
+          <li>
+            🌍 <strong>If you checked 1 billion seeds per second</strong> since the Big Bang (13.8B years ago), you'd have checked <span class="stat">0.0000000001%</span> of all possible 12-word seeds.
+          </li>
+          <li>
+            🪐 A 24-word seed (2²⁵⁶) has <strong>more combinations than there are atoms in the observable universe</strong> — by many orders of magnitude.
+          </li>
+        </ul>
+
+        <div style="background:#0d1117;border-radius:10px;padding:16px;margin:12px 0;border:1px solid var(--card-border);">
+          <p style="font-size:0.85rem;margin-bottom:8px;"><strong>Interactive comparison:</strong> How long would it take?</p>
+          <div class="diff-slider-wrap" style="margin-bottom:10px;">
+            <label>💻 Computers guessing: <strong id="compPowerLabel">1 trillion / second</strong></label>
+            <input type="range" id="compSlider" min="0" max="4" value="2" oninput="updateSeedCalc()" style="width:100%">
+            <div style="display:flex;justify-content:space-between;font-size:0.7rem;color:var(--text-dim);">
+              <span>Your laptop</span>
+              <span>All Bitcoin miners</span>
+              <span>All computers on Earth</span>
+            </div>
+          </div>
+          <div style="text-align:center;">
+            <div style="font-size:1.6rem;font-weight:800;color:var(--purple);" id="seedTimeResult">trillions of years</div>
+            <p style="font-size:0.85rem;color:var(--text-dim);" id="seedTimeSub">vs. age of universe: 13.8 billion years</p>
+          </div>
+        </div>
+
+        <div class="code-explain">
+          <p><span class="label">The BIP39 Standard</span> Bitcoin Improvement Proposal 39 defines a list of <strong>2,048 words</strong> (see <a href="https://github.com/bitcoin/bips/blob/master/bip-0039/english.txt" target="_blank" style="color:var(--orange);">english.txt on GitHub</a>). A 12-word phrase = 128 bits of entropy (with 4 checksum bits). A 24-word phrase = 256 bits of entropy.</p>
+          <p><span class="label">⚠️ The REAL Danger</span> The math is unbreakable — but humans break their own security by: taking photos of their seed, typing it online, using phishing sites, or generating seeds with bad random number generators. <strong>The system is secure. The user is the weakest link.</strong></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="verify-steps">
+      <h4>✅ How to Verify This Yourself</h4>
+      <ol>
+        <li><strong>See the word list:</strong> Go to <a href="https://github.com/bitcoin/bips/blob/master/bip-0039/english.txt" target="_blank" style="color:var(--orange);">github.com/bitcoin/bips/bip-0039/english.txt</a> — 2,048 words.</li>
+        <li><strong>Do the math:</strong> 2,048<sup>12</sup> = 5.4 × 10³⁹. Type "2048^12" into Google — it computes it instantly.</li>
+        <li><strong>Understand the scale:</strong> There are "only" 10⁸⁰ atoms in the observable universe. 2,048<sup>12</sup> is huge, but 2,048<sup>24</sup> is <em>larger</em> than 10⁸⁰.</li>
+        <li><strong>Check the BIP:</strong> Read <a href="https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki" target="_blank" style="color:var(--orange);">BIP39 specification</a> — it's a short, readable document.</li>
+      </ol>
+    </div>
+
+    <div class="ai-verify-wrap">
+      <button class="ai-btn" onclick="copyAIPrompt('seed')">🤖 Verify with AI — Copy Prompt</button>
+      <button class="expando-btn" onclick="toggleExpando(this)">📋 Show prompt</button>
+    </div>
+    <div class="ai-prompt-box" id="prompt-seed">
+      <p style="font-size:0.8rem;color:var(--text-dim);margin-bottom:6px;">📋 Paste this into ChatGPT, Claude, or any AI:</p>
+      <div class="prompt-text">I'm trying to understand Bitcoin seed phrase security. Please verify and explain:
+
+1. A 12-word BIP39 seed phrase uses 2048 possible words. How many combinations is 2048^12?
+2. Write out the full number: 2048^12 = ?
+3. Compare this number to: grains of sand on Earth, atoms in the human body, age of the universe in seconds, and atoms in the observable universe.
+4. If every computer on Earth worked together to brute-force a single 12-word seed, how long would it take?
+5. What are the actual risks to seed phrases (not the math, but human behavior)?
+
+Be honest — is the math actually unbreakable? What about quantum computing?</div>
+    </div>
+
+    <p style="font-size:0.8rem;color:var(--text-dim);margin-top:8px;">🔗 <a href="https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki" target="_blank" style="color:var(--blue);">BIP39 Specification</a> &nbsp;|&nbsp; <a href="https://github.com/bitcoin/bips/blob/master/bip-0039/english.txt" target="_blank" style="color:var(--blue);">Word List (2048 words)</a></p>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- EXPERIMENT 6: Halving Schedule -->
+<!-- ============================================ -->
+<div class="card" data-claim="halving">
+  <div class="card-header" onclick="toggleCard(this)">
+    <div class="num">6</div>
+    <div class="icon">📉</div>
+    <div class="card-title">
+      <h3>The Halving Schedule — Predictable Supply</h3>
+      <div class="claim">"New bitcoin creation is cut in half every 4 years, predictably, until ~2140"</div>
+    </div>
+    <div class="check-wrap" onclick="event.stopPropagation();toggleCheck(this)" id="check-halving">✓</div>
+  </div>
+  <div class="card-body">
+    <p style="margin-bottom:12px;">Every <strong>210,000 blocks</strong> (~4 years), the reward for mining a block is cut in half. This is hard-coded, not voted on. It will happen whether you want it to or not, until the subsidy reaches zero around <strong>2140</strong>.</p>
+
+    <div class="demo-box">
+      <h4>📊 The Halving Timeline</h4>
+      <div class="halving-chart" id="halvingChart">
+        <div class="bar-row">
+          <div class="era-label">2009 — Era 0</div>
+          <div class="bar" style="width:100%;background:var(--orange);"><span style="color:#0b0e14;">50 BTC</span></div>
+        </div>
+        <div class="bar-row">
+          <div class="era-label">2012 — Era 1</div>
+          <div class="bar" style="width:50%;background:#d98e2a;"><span style="color:#0b0e14;">25 BTC</span></div>
+        </div>
+        <div class="bar-row">
+          <div class="era-label">2016 — Era 2</div>
+          <div class="bar" style="width:25%;background:#b87325;"><span>12.5 BTC</span></div>
+        </div>
+        <div class="bar-row">
+          <div class="era-label">2020 — Era 3</div>
+          <div class="bar" style="width:12.5%;background:#9c5c1f;"><span>6.25 BTC</span></div>
+        </div>
+        <div class="bar-row">
+          <div class="era-label">2024 — Era 4</div>
+          <div class="bar" style="width:6.25%;background:var(--orange);"><span>3.125 BTC</span> <span class="current-arrow">⬅ YOU ARE HERE</span></div>
+        </div>
+        <div class="bar-row" style="opacity:0.5;">
+          <div class="era-label">2028 — Era 5</div>
+          <div class="bar" style="width:3.125%;background:#7a4a1a;"><span style="font-size:0.6rem;">1.563 BTC</span></div>
+        </div>
+        <div class="bar-row" style="opacity:0.35;">
+          <div class="era-label">2032 — Era 6</div>
+          <div class="bar" style="width:1.56%;background:#5e3813;"><span style="font-size:0.55rem;">0.781 BTC</span></div>
+        </div>
+        <div class="bar-row" style="opacity:0.25;">
+          <div class="era-label">...→ 2140</div>
+          <div class="bar" style="width:0.1%;background:var(--text-dim);"><span style="font-size:0.5rem;">~0 BTC</span></div>
+        </div>
+      </div>
+
+      <div class="code-explain" style="margin-top:12px;">
+        <p><span class="label" style="background:rgba(0,229,160,0.15);color:var(--green);">Live Network</span> Next halving in <strong id="liveHalvingBlocks">~85,822 blocks</strong> (≈ <span id="liveHalvingDate">April 2028</span>) — hard-coded, no vote required.</p>
+        <p><span class="label">The Code</span> Remember from Experiment 1: <code style="color:var(--orange);">nSubsidy >>= halvings</code> means "right-shift" — divide by 2 for each halving. The halving interval of <strong>210,000 blocks</strong> is set in <a href="https://github.com/bitcoin/bitcoin/blob/master/src/chainparams.cpp" target="_blank" style="color:var(--orange);">chainparams.cpp</a>:</p>
+        <div class="code-block" style="margin-top:10px;">
+          <span class="highlight-line-green">consensusParams.nSubsidyHalvingInterval = <span class="num">210000</span>; <span class="comment">// Every ~4 years</span></span>
+        </div>
+        <p style="margin-top:8px;"><span class="label">Why 32 Halvings?</span> After 32 halvings (33 eras including the first), the reward becomes so small it rounds to zero. This is when mining will be <strong>entirely supported by transaction fees</strong>.</p>
+      </div>
+    </div>
+
+    <div class="verify-steps">
+      <h4>✅ How to Verify This Yourself</h4>
+      <ol>
+        <li><strong>Check the halving countdown:</strong> <a href="https://mempool.space/" target="_blank" style="color:var(--orange);">mempool.space</a> shows the block height and when the next halving is expected.</li>
+        <li><strong>Look at history:</strong> Bitcoin has had exactly <strong>4 halvings</strong> (2012, 2016, 2020, 2024). Each one cut the reward exactly in half.</li>
+        <li><strong>Read the code:</strong> The line <code>consensusParams.nSubsidyHalvingInterval = 210000</code> is in the public Bitcoin Core source code.</li>
+        <li><strong>Run your own node:</strong> It enforces this rule independently — no one can change it on your node without your permission.</li>
+      </ol>
+    </div>
+
+    <div class="ai-verify-wrap">
+      <button class="ai-btn" onclick="copyAIPrompt('halving')">🤖 Verify with AI — Copy Prompt</button>
+      <button class="expando-btn" onclick="toggleExpando(this)">📋 Show prompt</button>
+    </div>
+    <div class="ai-prompt-box" id="prompt-halving">
+      <p style="font-size:0.8rem;color:var(--text-dim);margin-bottom:6px;">📋 Paste this into ChatGPT, Claude, or any AI:</p>
+      <div class="prompt-text">Explain Bitcoin's halving schedule to me. I want to verify:
+1. How many blocks between halvings and why 210,000?
+2. List all the halvings that have happened so far with dates and block rewards.
+3. When is the next halving expected? How many will there be total?
+4. How does the halving schedule guarantee the 21 million limit?
+5. What happens after all bitcoin are mined? Will the network stop working?
+6. Can the halving schedule be changed? What would it take?</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- EXPERIMENT 7: Open Source -- Anyone Can Audit -->
+<!-- ============================================ -->
+<div class="card" data-claim="opensource">
+  <div class="card-header" onclick="toggleCard(this)">
+    <div class="num">7</div>
+    <div class="icon">📖</div>
+    <div class="card-title">
+      <h3>Open Source — Anyone Can Read Every Line</h3>
+      <div class="claim">"Bitcoin's code is completely open source. Anyone can review it for backdoors or hidden features"</div>
+    </div>
+    <div class="check-wrap" onclick="event.stopPropagation();toggleCheck(this)" id="check-opensource">✓</div>
+  </div>
+  <div class="card-body">
+    <p style="margin-bottom:12px;">Bitcoin's code isn't secret — it's <strong>open source</strong> under the MIT license. Bitcoin Core, the reference implementation, has been reviewed by thousands of developers, security researchers, and academics over <strong>16+ years</strong>. There are no hidden backdoors, no secret inflation, no "hidden mint" button.</p>
+
+    <div class="demo-box">
+      <h4>📂 The Numbers Behind Open Source</h4>
+      <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;padding:10px 0;">
+        <div class="diff-result" style="margin:0;width:100%;">
+          <div class="stat-box">
+            <div class="num">16+</div>
+            <div class="lbl">Years of Review</div>
+          </div>
+          <div class="stat-box">
+            <div class="num">1,000+</div>
+            <div class="lbl">Contributors</div>
+          </div>
+          <div class="stat-box">
+            <div class="num">~800K</div>
+            <div class="lbl">Lines of Code</div>
+          </div>
+          <div class="stat-box">
+            <div class="num">30,000+</div>
+            <div class="lbl">GitHub Stars</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="code-explain">
+        <p><span class="label">What "Open Source" Means</span> The <strong>MIT license</strong> says: anyone can copy, modify, and distribute the software. There is no company behind it. If tomorrow someone added a backdoor to Bitcoin Core, every node operator would see the change in the code and reject it — or simply refuse to upgrade.</p>
+        <p><span class="label">The Social Contract</span> Because thousands of eyes review every code change, introducing a hidden feature (like printing more bitcoin) is essentially impossible. The consensus rules are the <strong>constitution</strong>, and every node is a citizen that enforces them.</p>
+        <p><span class="label">Bitcoin ≠ Bitcoin Core</span> There are <strong>multiple independent implementations</strong> of the Bitcoin protocol: Bitcoin Core (C++), btcd (Go), and others. They all enforce the same consensus rules. If one implementation had a bug, the others would reject it. This is <strong>redundancy by design</strong>.</p>
+        <div class="fun-fact" style="display:block;margin-top:8px;text-align:left;"><strong>⚠️ Note on Bitcoin Knots:</strong> The latest version of Bitcoin Knots (29.4+) follows the BIP-110 / RDTS fork, not the main Bitcoin chain. However, the <strong>pre-RDTS version</strong> (v29.3.knots20260507) still follows the main chain — some users prefer it. Always verify which chain a client follows before running it. <a href="https://bip110.org/change-chains/" target="_blank" style="color:var(--orange);">More context on the fork →</a></div>
+      </div>
+    </div>
+
+    <div class="verify-steps">
+      <h4>✅ How to Verify This Yourself</h4>
+      <ol>
+        <li><strong>Go to GitHub:</strong> <a href="https://github.com/bitcoin/bitcoin" target="_blank" style="color:var(--orange);">github.com/bitcoin/bitcoin</a> — no account needed to browse.</li>
+        <li><strong>Browse the code:</strong> Click into <code>src/</code>, then <code>consensus/</code>, then <code>validation.cpp</code>. Read the functions.</li>
+        <li><strong>Check the commit history:</strong> See every change ever made to Bitcoin Core — who made it, when, and why.</li>
+        <li><strong>Look at the issues:</strong> See real bug reports and discussions from the community.</li>
+        <li><strong>Check for alternative clients:</strong> Search for "btcd" — an independent full node implementation written in Go.</li>
+      </ol>
+    </div>
+
+    <div class="ai-verify-wrap">
+      <button class="ai-btn" onclick="copyAIPrompt('opensource')">🤖 Verify with AI — Copy Prompt</button>
+      <button class="expando-btn" onclick="toggleExpando(this)">📋 Show prompt</button>
+    </div>
+    <div class="ai-prompt-box" id="prompt-opensource">
+      <p style="font-size:0.8rem;color:var(--text-dim);margin-bottom:6px;">📋 Paste this into ChatGPT, Claude, or any AI:</p>
+      <div class="prompt-text">I want to verify that Bitcoin is truly open source and that there are no hidden backdoors. Please help me understand:
+1. What open source license does Bitcoin Core use?
+2. How many years has it been publicly reviewed?
+3. Could someone add a backdoor without anyone noticing? What's the process for code changes?
+4. Are there multiple independent implementations of Bitcoin (not just Bitcoin Core)?
+5. What would happen if a developer tried to add code that mints extra coins?
+6. Can I download, compile, and run Bitcoin Core myself to verify it's the same code?
+
+Include links to the actual GitHub repository and any independent implementations.</div>
+    </div>
+
+    <p style="font-size:0.8rem;color:var(--text-dim);margin-top:8px;">🔗 <a href="https://github.com/bitcoin/bitcoin" target="_blank" style="color:var(--blue);">Bitcoin Core on GitHub</a> &nbsp;|&nbsp; <a href="https://github.com/btcsuite/btcd" target="_blank" style="color:var(--blue);">btcd (Go implementation)</a></p>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- EXPERIMENT 8: Censorship Resistance -->
+<!-- ============================================ -->
+<div class="card" data-claim="censorship">
+  <div class="card-header" onclick="toggleCard(this)">
+    <div class="num">8</div>
+    <div class="icon">🛡️</div>
+    <div class="card-title">
+      <h3>Censorship Resistance — No One Can Freeze You</h3>
+      <div class="claim">"No government, bank, or company can block or reverse a Bitcoin transaction"</div>
+    </div>
+    <div class="check-wrap" onclick="event.stopPropagation();toggleCheck(this)" id="check-censorship">✓</div>
+  </div>
+  <div class="card-body">
+    <p style="margin-bottom:12px;">This is the superpower that makes Bitcoin different from every digital payment system before it. Once a transaction is confirmed by the network, <strong>no one on Earth can reverse it</strong>. No CEO, no court order, no government decree. The math decides, not people.</p>
+
+    <div class="demo-box">
+      <h4>🧪 How Censorship Resistance Works</h4>
+
+      <div style="display:flex;flex-direction:column;gap:16px;padding:10px 0;">
+        <div style="background:#0d1117;border-radius:10px;padding:16px;border:1px solid var(--card-border);">
+          <h4 style="color:var(--green);margin-bottom:6px;">✅ What Bitcoin CAN Do</h4>
+          <ul style="list-style:none;padding:0;">
+            <li style="padding:4px 0;">✔ Send money to anyone, anywhere, anytime</li>
+            <li style="padding:4px 0;">✔ Receive money without asking permission</li>
+            <li style="padding:4px 0;">✔ Hold your own keys (be your own bank)</li>
+            <li style="padding:4px 0;">✔ Send as little as 0.00000001 BTC (~$0.001)</li>
+            <li style="padding:4px 0;">✔ Transact on a Sunday. Or Christmas. Or during a bank holiday.</li>
+          </ul>
+        </div>
+        <div style="background:#0d1117;border-radius:10px;padding:16px;border:1px solid var(--card-border);">
+          <h4 style="color:var(--red);margin-bottom:6px;">❌ What Bitcoin CANNOT Do (This Is Good)</h4>
+          <ul style="list-style:none;padding:0;">
+            <li style="padding:4px 0;">✖ Freeze your account</li>
+            <li style="padding:4px 0;">✖ Reverse a confirmed transaction</li>
+            <li style="padding:4px 0;">✖ Block a valid transaction from being mined</li>
+            <li style="padding:4px 0;">✖ Create new coins from nothing</li>
+            <li style="padding:4px 0;">✖ Charge you fees without your consent</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="code-explain">
+        <p><span class="label">Why It Works</span> Every node validates every transaction independently. A transaction that pays the right fees, has valid signatures, and spends unspent outputs will be <strong>accepted by the network regardless of who you are</strong>. The nodes don't know your name, your nationality, or your politics — they only check math.</p>
+        <p><span class="label">The 51% Attack</span> Technically, if a group controlled >50% of mining power, they could temporarily reverse recent transactions. This is called a 51% attack. But they can't: <strong>(a)</strong> create new coins out of thin air, <strong>(b)</strong> change the rules permanently, or <strong>(c)</strong> spend your coins without your keys. And recovering from one is just a matter of other miners joining honest mining.</p>
+        <p><span class="label">⚡ Lightning Network</span> For small everyday payments, the Lightning Network adds another layer: instant, near-zero fee transactions with the same censorship-resistant properties.</p>
+      </div>
+    </div>
+
+    <div class="verify-steps">
+      <h4>✅ How to Verify This Yourself</h4>
+      <ol>
+        <li><strong>Send a transaction:</strong> Use any wallet. Send $1 to a friend. It goes through — no approval needed.</li>
+        <li><strong>Check a block explorer:</strong> Go to <a href="https://mempool.space" target="_blank" style="color:var(--orange);">mempool.space</a>, search for a recent transaction. It's there for everyone to see — no one deleted it.</li>
+        <li><strong>Run a node:</strong> When you run a full node, <em>you</em> decide which transactions to accept. If someone tried to force an invalid transaction, your node would reject it — and there's nothing they can do about it.</li>
+        <li><strong>Read about real examples:</strong> WikiLeaks (2010), the Canadian trucker protests (2022) — Bitcoin donations received and spent despite government pressure on banks.</li>
+      </ol>
+    </div>
+
+    <div class="ai-verify-wrap">
+      <button class="ai-btn" onclick="copyAIPrompt('censorship')">🤖 Verify with AI — Copy Prompt</button>
+      <button class="expando-btn" onclick="toggleExpando(this)">📋 Show prompt</button>
+    </div>
+    <div class="ai-prompt-box" id="prompt-censorship">
+      <p style="font-size:0.8rem;color:var(--text-dim);margin-bottom:6px;">📋 Paste this into ChatGPT, Claude, or any AI:</p>
+      <div class="prompt-text">I want to understand Bitcoin's censorship resistance. Please explain:
+1. What makes Bitcoin transactions uncensorable? Is it absolute or are there limits?
+2. How do nodes prevent anyone from blocking a valid transaction?
+3. What is a 51% attack and what can/can't an attacker do?
+4. Give real historical examples where Bitcoin resisted censorship attempts.
+5. How does Bitcoin compare to traditional banking or PayPal in terms of censorship?
+6. Are there any realistic threats to Bitcoin's censorship resistance in the future?
+
+Be balanced — mention the real risks (mining pools, network-level blocking, etc.) but also explain why Bitcoin remains the most censorship-resistant payment system ever created.</div>
+    </div>
+
+    <p style="font-size:0.8rem;color:var(--text-dim);margin-top:8px;">🔗 <a href="https://mempool.space" target="_blank" style="color:var(--blue);">Mempool Explorer</a> &nbsp;|&nbsp; <a href="https://github.com/bitcoin/bitcoin/blob/master/src/validation.cpp" target="_blank" style="color:var(--blue);">Transaction validation code</a></p>
+  </div>
+</div>
+
+</div><!-- end verification-grid -->
+
+<!-- ============================================ -->
+<!-- EXPERIMENT 9: Bitcoin as Money -->
+<!-- ============================================ -->
+<div class="card" data-claim="money">
+  <div class="card-header" onclick="toggleCard(this)">
+    <div class="num">9</div>
+    <div class="icon">🏦</div>
+    <div class="card-title">
+      <h3>Bitcoin as Sound Money</h3>
+      <div class="claim">"Bitcoin is better money than gold, fiat, or any alternative humanity has tried"</div>
+    </div>
+    <div class="check-wrap" onclick="event.stopPropagation();toggleCheck(this)" id="check-money">✓</div>
+  </div>
+  <div class="card-body">
+    <p style="margin-bottom:12px;">Money isn't just "what we use to buy things" — it's a technology that evolved over thousands of years. Before you can judge Bitcoin as money, you need to know <strong>what makes money good.</strong> Economists have identified 7 essential properties. Let's compare Bitcoin, gold, and fiat across all of them.</p>
+
+    <div class="demo-box">
+      <h4>📊 The Money Scorecard</h4>
+      <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:10px;">🟢 = Excellent &nbsp; 🔵 = Good &nbsp; 🟠 = Okay &nbsp; 🔴 = Poor</p>
+
+      <table class="money-scorecard">
+        <thead>
+          <tr>
+            <th>Property</th>
+            <th style="color:var(--orange);">₿ Bitcoin</th>
+            <th style="color:#ffd700;">🥇 Gold</th>
+            <th style="color:var(--text-dim);">💵 Fiat</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1. Scarce</td>
+            <td><span class="score-badge perfect">🟢 Perfect</span></td>
+            <td><span class="score-badge good">🔵 Good</span></td>
+            <td><span class="score-badge poor">🔴 Poor</span></td>
+          </tr>
+          <tr>
+            <td>2. Durable</td>
+            <td><span class="score-badge perfect">🟢 Perfect</span></td>
+            <td><span class="score-badge perfect">🟢 Perfect</span></td>
+            <td><span class="score-badge poor">🔴 Poor</span></td>
+          </tr>
+          <tr>
+            <td>3. Portable</td>
+            <td><span class="score-badge perfect">🟢 Perfect</span></td>
+            <td><span class="score-badge poor">🔴 Poor</span></td>
+            <td><span class="score-badge ok">🟠 Okay</span></td>
+          </tr>
+          <tr>
+            <td>4. Divisible</td>
+            <td><span class="score-badge perfect">🟢 Perfect</span></td>
+            <td><span class="score-badge poor">🔴 Poor</span></td>
+            <td><span class="score-badge ok">🟠 Okay</span></td>
+          </tr>
+          <tr>
+            <td>5. Fungible</td>
+            <td><span class="score-badge good">🔵 Good</span></td>
+            <td><span class="score-badge perfect">🟢 Perfect</span></td>
+            <td><span class="score-badge ok">🟠 Okay</span></td>
+          </tr>
+          <tr>
+            <td>6. Recognizable</td>
+            <td><span class="score-badge good">🔵 Good</span></td>
+            <td><span class="score-badge ok">🟠 Okay</span></td>
+            <td><span class="score-badge perfect">🟢 Perfect</span></td>
+          </tr>
+          <tr>
+            <td>7. Store of Value</td>
+            <td><span class="score-badge perfect">🟢 Perfect</span></td>
+            <td><span class="score-badge good">🔵 Good</span></td>
+            <td><span class="score-badge poor">🔴 Poor</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="money-verdict">
+        <div class="verdict-title">🥇 Bitcoin scores 6/7 perfect, 1/7 good.</div>
+        <p style="font-size:0.85rem;color:var(--text-dim);">Gold scores 2/7 perfect (durability, fungibility). Fiat scores 1/7 perfect (recognizability — backed by government). <strong>Bitcoin is the first money in history that scores "good" or better on every single property.</strong></p>
+      </div>
+    </div>
+
+    <!-- Interactive Property Explorer -->
+    <div class="demo-box">
+      <h4>🔍 Explore Each Property</h4>
+      <p style="font-size:0.85rem;color:var(--text-dim);margin-bottom:6px;">Click a property to see how each form of money compares:</p>
+      <div class="prop-btn-row">
+        <button class="prop-btn active" onclick="showMoneyProp('scarcity')">🏔️ Scarcity</button>
+        <button class="prop-btn" onclick="showMoneyProp('durability')">🧱 Durability</button>
+        <button class="prop-btn" onclick="showMoneyProp('portability')">✈️ Portability</button>
+        <button class="prop-btn" onclick="showMoneyProp('divisibility')">🔪 Divisibility</button>
+        <button class="prop-btn" onclick="showMoneyProp('fungibility')">🔄 Fungibility</button>
+        <button class="prop-btn" onclick="showMoneyProp('recognizability')">👀 Recognizability</button>
+        <button class="prop-btn" onclick="showMoneyProp('storevalue')">🏛️ Store of Value</button>
+      </div>
+
+      <div class="prop-detail-box show" id="prop-scarcity">
+        <h4>🏔️ Scarcity — "Is there a hard limit?"</h4>
+        <p style="font-size:0.85rem;color:var(--text-dim);">Good money can't be printed into oblivion. The rarer something is, the better it holds its value.</p>
+        <div class="comparison-mini">
+          <div class="bitcoin-score"><strong style="color:var(--orange);">₿ Bitcoin</strong><br>🟢 Mathematically capped at 21M. <strong>Verifiable in code.</strong> No human can change it without every node agreeing.</div>
+          <div class="gold-score"><strong style="color:#ffd700;">🥇 Gold</strong><br>🔵 Hard to find, but new gold is mined every year (~3,500 tons/yr). Supply grows ~1-2% annually. We don't know how much is left.</div>
+          <div class="fiat-score"><strong style="color:var(--text-dim);">💵 Fiat</strong><br>🔴 Infinite. Central banks can print unlimited amounts. In 2020-2023, the US money supply grew ~40%. No cap, no limit.</div>
+        </div>
+      </div>
+
+      <div class="prop-detail-box" id="prop-durability">
+        <h4>🧱 Durability — "Does it last?"</h4>
+        <p style="font-size:0.85rem;color:var(--text-dim);">Money shouldn't rot, rust, or degrade over time. If it decays, it's a bad store of value.</p>
+        <div class="comparison-mini">
+          <div class="bitcoin-score"><strong style="color:var(--orange);">₿ Bitcoin</strong><br>🟢 Purely digital information. Cannot rot, rust, or be physically destroyed. Lasts as long as the internet exists.</div>
+          <div class="gold-score"><strong style="color:#ffd700;">🥇 Gold</strong><br>🟢 Virtually indestructible. Gold from 3,000+ years ago is still perfectly preserved. Doesn't corrode or tarnish.</div>
+          <div class="fiat-score"><strong style="color:var(--text-dim);">💵 Fiat</strong><br>🔴 Paper bills wear out (average lifespan of a $1 bill: ~6.5 years). Must be constantly replaced. Digital fiat is just a ledger entry — deleteable.</div>
+        </div>
+      </div>
+
+      <div class="prop-detail-box" id="prop-portability">
+        <h4>✈️ Portability — "Can I move it?"</h4>
+        <p style="font-size:0.85rem;color:var(--text-dim);">Can you take it with you? Can you send it across the world?</p>
+        <div class="comparison-mini">
+          <div class="bitcoin-score"><strong style="color:var(--orange);">₿ Bitcoin</strong><br>🟢 Send any amount, anywhere, instantly. A $1B transaction moves as easily as $1. No borders, no gates, no permission needed.</div>
+          <div class="gold-score"><strong style="color:#ffd700;">🥇 Gold</strong><br>🔴 Heavy and expensive to move. Transporting large amounts requires armored vehicles, insurance, and trust. Moving $1M in gold weighs ~55 lbs.</div>
+          <div class="fiat-score"><strong style="color:var(--text-dim);">💵 Fiat</strong><br>🟠 Digital transfers are easy, but banks can block them, governments can freeze them, and international wires take days. Physical cash is bulky.</div>
+        </div>
+      </div>
+
+      <div class="prop-detail-box" id="prop-divisibility">
+        <h4>🔪 Divisibility — "Can I split it?"</h4>
+        <p style="font-size:0.85rem;color:var(--text-dim);">Good money can be divided into small units for small purchases.</p>
+        <div class="comparison-mini">
+          <div class="bitcoin-score"><strong style="color:var(--orange);">₿ Bitcoin</strong><br>🟢 Divisible to 8 decimal places (1 sat = 0.00000001 BTC). Can send fractions of a cent. Future: divisible even further if needed.</div>
+          <div class="gold-score"><strong style="color:#ffd700;">🥇 Gold</strong><br>🔴 Can be split, but it requires melting and assaying. Tiny amounts are impractical — you can't buy a coffee with gold dust.</div>
+          <div class="fiat-score"><strong style="color:var(--text-dim);">💵 Fiat</strong><br>🟠 Divisible to 2 decimal places usually. Digital can go further but physical coins have practical limits. Inflation eats the smallest denominations.</div>
+        </div>
+      </div>
+
+      <div class="prop-detail-box" id="prop-fungibility">
+        <h4>🔄 Fungibility — "Are all units equal?"</h4>
+        <p style="font-size:0.85rem;color:var(--text-dim);">One unit should be perfectly interchangeable with another. You shouldn't discriminate between different coins.</p>
+        <div class="comparison-mini">
+          <div class="bitcoin-score"><strong style="color:var(--orange);">₿ Bitcoin</strong><br>🔵 Mostly fungible — 1 BTC = 1 BTC. However, coins can be "tainted" on the blockchain (tracked from illicit activity). Some exchanges blacklist certain coins.</div>
+          <div class="gold-score"><strong style="color:#ffd700;">🥇 Gold</strong><br>🟢 One ounce of pure gold = another ounce of pure gold. No one tracks "history" of a gold bar. Complete fungibility.</div>
+          <div class="fiat-score"><strong style="color:var(--text-dim);">💵 Fiat</strong><br>🟠 Digital dollars are tracked. Banks can freeze specific accounts or reject specific transactions. "Tainted" bills are legally seized.</div>
+        </div>
+      </div>
+
+      <div class="prop-detail-box" id="prop-recognizability">
+        <h4>👀 Recognizability — "Is it easy to verify?"</h4>
+        <p style="font-size:0.85rem;color:var(--text-dim);">Can the average person tell real from fake without special equipment?</p>
+        <div class="comparison-mini">
+          <div class="bitcoin-score"><strong style="color:var(--orange);">₿ Bitcoin</strong><br>🔵 Easy to verify digitally. Any wallet checks the blockchain. Public-key cryptography means faking a valid transaction is computationally impossible. However, it's a learning curve.</div>
+          <div class="gold-score"><strong style="color:#ffd700;">🥇 Gold</strong><br>🟠 Counterfeit gold exists (tungsten cores, plated bars). Verifying purity requires density tests, acid tests, or XRF analyzers. Hard for average person.</div>
+          <div class="fiat-score"><strong style="color:var(--text-dim);">💵 Fiat</strong><br>🟢 Highly recognizable. Holograms, watermarks, security threads. Governments invest billions in anti-counterfeiting. However, digital fiat in a bank account is just a number you trust.</div>
+        </div>
+      </div>
+
+      <div class="prop-detail-box" id="prop-storevalue">
+        <h4>🏛️ Store of Value — "Does my purchasing power hold?"</h4>
+        <p style="font-size:0.85rem;color:var(--text-dim);">The most important property over time — can I save in it and not lose value?</p>
+        <div class="comparison-mini">
+          <div class="bitcoin-score"><strong style="color:var(--orange);">₿ Bitcoin</strong><br>🟢 Perfect supply schedule. Zero inflation (once fully mined). Has appreciated against every fiat currency since inception. Volatile in the short term, but the trend over any 4+ year window is up.</div>
+          <div class="gold-score"><strong style="color:#ffd700;">🥇 Gold</strong><br>🔵 Held value for thousands of years. An ounce of gold bought a fine toga in Rome (~300 AD) and buys a fine suit today. ~1-2% annual supply inflation.</div>
+          <div class="fiat-score"><strong style="color:var(--text-dim);">💵 Fiat</strong><br>🔴 Since 1971 (Nixon ended gold convertibility), the US dollar has lost ~87% of its purchasing power. By design — central banks target 2% inflation, meaning your savings lose half their value every ~35 years.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- History of Money -->
+    <div class="demo-box">
+      <h4>⏳ The History of Money: Why It Matters</h4>
+      <div style="display:flex;flex-direction:column;gap:6px;margin:10px 0;">
+        <div style="background:#0d1117;border-radius:8px;padding:8px 14px;font-size:0.82rem;border-left:3px solid #8b7355;">
+          <strong style="color:#c4a96a;">🐚 Barter → Cowrie Shells</strong> (10,000 BC) — Direct trade was inefficient. Shells became first widely used currency.
+        </div>
+        <div style="background:#0d1117;border-radius:8px;padding:8px 14px;font-size:0.82rem;border-left:3px solid #ffd700;">
+          <strong style="color:#ffd700;">🥇 Gold & Silver Coins</strong> (600 BC) — Durable, divisible, scarce. The gold standard prevailed for ~2,600 years.
+        </div>
+        <div style="background:#0d1117;border-radius:8px;padding:8px 14px;font-size:0.82rem;border-left:3px solid #4fc3f7;">
+          <strong style="color:#4fc3f7;">📄 Paper Money (Gold-Backed)</strong> (1600s) — Receipts for gold. Then governments slowly detached from gold...
+        </div>
+        <div style="background:#0d1117;border-radius:8px;padding:8px 14px;font-size:0.82rem;border-left:3px solid var(--red);">
+          <strong style="color:var(--red);">💸 Pure Fiat</strong> (1971 — today) — "Nothing backs it but government decree." Since then: 87% dollar devaluation, endless printing, boom-bust cycles.
+        </div>
+        <div style="background:#0d1117;border-radius:8px;padding:8px 14px;font-size:0.82rem;border-left:3px solid var(--orange);">
+          <strong style="color:var(--orange);">₿ Bitcoin</strong> (2009 — today) — First money with <strong>mathematically provable scarcity</strong>. No issuer. No borders. No inflation. The natural next step in monetary evolution.
+        </div>
+      </div>
+    </div>
+
+    <div class="verify-steps">
+      <h4>✅ How to Verify This Yourself</h4>
+      <ol>
+        <li><strong>Define "good money" for yourself:</strong> Before reading any economics, write down what you think makes something "good money." Then check it against the 7 properties above.</li>
+        <li><strong>Check history:</strong> Every fiat currency in history has eventually gone to zero. Research "fiat currency lifespan" — the average is ~27 years for modern currencies. The US dollar (since 1971) is the longest-running, and it's lost 87% already.</li>
+        <li><strong>Test portability yourself:</strong> Try sending $10 via bank wire internationally vs. sending $10 in Bitcoin. Compare time, fees, and hassle.</li>
+        <li><strong>Check supply growth:</strong> <a href="https://fred.stlouisfed.org/series/M2SL" target="_blank" style="color:var(--orange);">Check the M2 money supply chart</a> — see how much fiat has been printed. Then check <a href="https://mempool.space/" target="_blank" style="color:var(--orange);">mempool.space</a> to see Bitcoin's supply growing predictably to 21M.</li>
+        <li><strong>Read the Bitcoin whitepaper:</strong> <a href="https://bitcoin.org/bitcoin.pdf" target="_blank" style="color:var(--orange);">bitcoin.org/bitcoin.pdf</a> — 9 pages. Satoshi doesn't call it "money" in the paper. He calls it a "peer-to-peer electronic cash system." Judge for yourself.</li>
+      </ol>
+    </div>
+
+    <div class="ai-verify-wrap">
+      <button class="ai-btn" onclick="copyAIPrompt('money')">🤖 Verify with AI — Copy Prompt</button>
+      <button class="expando-btn" onclick="toggleExpando(this)">📋 Show prompt</button>
+    </div>
+    <div class="ai-prompt-box" id="prompt-money">
+      <p style="font-size:0.8rem;color:var(--text-dim);margin-bottom:6px;">📋 Paste this into ChatGPT, Claude, or any AI:</p>
+      <div class="prompt-text">I'm trying to understand what makes "good money" and whether Bitcoin qualifies. Please help me think through this:
+
+1. What are the generally accepted properties of good money? (Scarcity, durability, portability, divisibility, fungibility, recognizability, store of value — are there others?)
+2. How does Bitcoin score on each property compared to gold and fiat (USD, EUR, etc.)?
+3. What are the weaknesses of each: Bitcoin, gold, and fiat?
+4. Every fiat currency in history has eventually failed. Is that true? What's the track record?
+5. If Bitcoin has superior properties to both gold and fiat on paper, why hasn't it replaced them yet? What are the real barriers?
+6. Is "money" something that governments decide, or is it something that emerges naturally from the market?
+
+Please be intellectually honest — don't just shill Bitcoin. Give me the real arguments for AND against each form of money.</div>
+    </div>
+
+    <p style="font-size:0.8rem;color:var(--text-dim);margin-top:8px;">🔗 <a href="https://bitcoin.org/bitcoin.pdf" target="_blank" style="color:var(--blue);">Bitcoin Whitepaper</a> &nbsp;|&nbsp; <a href="https://fred.stlouisfed.org/series/M2SL" target="_blank" style="color:var(--blue);">US M2 Money Supply (FRED)</a> &nbsp;|&nbsp; <a href="https://mempool.space/" target="_blank" style="color:var(--blue);">Live Bitcoin Supply</a></p>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- EXPERIMENT 10: Consensus & Policy Rules -->
+<!-- ============================================ -->
+<div class="card" data-claim="consensus">
+  <div class="card-header" onclick="toggleCard(this)">
+    <div class="num">10</div>
+    <div class="icon">⚖️</div>
+    <div class="card-title">
+      <h3>Consensus & Policy Rules — How Bitcoin Changes (And Doesn't)</h3>
+      <div class="claim">"No single person, company, or government can change Bitcoin's rules. Changes require near-universal agreement"</div>
+    </div>
+    <div class="check-wrap" onclick="event.stopPropagation();toggleCheck(this)" id="check-consensus">✓</div>
+  </div>
+  <div class="card-body">
+    <p style="margin-bottom:12px;">You've heard it before: <em>"Bitcoin is hard to change. No government can change the rules."</em> But <strong>why</strong>? The answer is in how Bitcoin distinguishes between two kinds of rules — and who gets a say when a change is proposed.</p>
+
+    <div class="demo-box">
+      <h4>⚖️ Two Kinds of Rules</h4>
+      <div style="display:flex;flex-wrap:wrap;gap:16px;justify-content:center;padding:8px 0;">
+        <div style="flex:1;min-width:200px;background:rgba(0,229,160,0.06);border:1px solid rgba(0,229,160,0.2);border-radius:10px;padding:14px;">
+          <div style="font-size:1.3rem;font-weight:700;color:var(--green);margin-bottom:6px;">🔒 Consensus</div>
+          <p style="font-size:0.82rem;color:var(--text-dim);">Hard-coded in the protocol. Every single node enforces them on every block. <strong>Non-negotiable.</strong></p>
+          <div style="margin-top:8px;font-size:0.8rem;color:var(--muted);">
+            <div>✅ 21M supply cap</div>
+            <div>✅ 10-min block target</div>
+            <div>✅ Subsidy halves every 210k blocks</div>
+            <div>✅ Difficulty adjustment</div>
+            <div>✅ Signature verification</div>
+            <div>❌ Blocks violating these = <strong style="color:#ff6b6b;">immediately rejected</strong></div>
+          </div>
+        </div>
+        <div style="flex:1;min-width:200px;background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.2);border-radius:10px;padding:14px;">
+          <div style="font-size:1.3rem;font-weight:700;color:var(--cyan);margin-bottom:6px;">⚙️ Policy</div>
+          <p style="font-size:0.82rem;color:var(--text-dim);">Local preferences set by each node operator. <strong>Configurable.</strong> Every node can choose differently.</p>
+          <div style="margin-top:8px;font-size:0.8rem;color:var(--muted);">
+            <div>📏 Min tx relay fee</div>
+            <div>📏 Max tx size</div>
+            <div>📏 Standard script types</div>
+            <div>📏 Block size relay limit</div>
+            <div><em>One node's policy isn't another's</em></div>
+          </div>
+        </div>
+      </div>
+      <div class="code-explain">
+        <p><span class="label">What This Means</span> A valid block must pass <strong>every consensus rule</strong> on every node. Policy rules only affect what a node <em>relays</em> in its mempool — not what blocks it accepts. This distinction is why individual nodes have freedom without breaking the network.</p>
+      </div>
+    </div>
+
+    <div class="demo-box">
+      <h4>📜 How Changes Happen — BIPs</h4>
+      <p style="font-size:0.85rem;color:var(--text-dim);margin-bottom:10px;">Bitcoin Improvement Proposals (BIPs) are the process for suggesting changes. Anyone can write one — it's a public document reviewed by the community.</p>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:6px 0;">
+        <div style="background:rgba(247,147,26,0.08);border:1px solid var(--orange);border-radius:8px;padding:10px 14px;text-align:center;flex:1;min-width:140px;">
+          <div style="font-size:0.9rem;font-weight:600;color:var(--orange);">✏️ Draft</div>
+          <div style="font-size:0.7rem;color:var(--text-dim);">Idea proposed on GitHub</div>
+        </div>
+        <div style="font-size:1.4rem;color:var(--muted);padding-top:8px;">→</div>
+        <div style="background:rgba(247,147,26,0.08);border:1px solid var(--orange);border-radius:8px;padding:10px 14px;text-align:center;flex:1;min-width:140px;">
+          <div style="font-size:0.9rem;font-weight:600;color:var(--orange);">💬 Review</div>
+          <div style="font-size:0.7rem;color:var(--text-dim);">Community discussion & refinement</div>
+        </div>
+        <div style="font-size:1.4rem;color:var(--muted);padding-top:8px;">→</div>
+        <div style="background:rgba(247,147,26,0.08);border:1px solid var(--orange);border-radius:8px;padding:10px 14px;text-align:center;flex:1;min-width:140px;">
+          <div style="font-size:0.9rem;font-weight:600;color:var(--orange);">🟢 Activation</div>
+          <div style="font-size:0.7rem;color:var(--text-dim);">Miners signal + nodes adopt</div>
+        </div>
+      </div>
+      <div class="code-explain" style="margin-top:10px;">
+        <p><span class="label">Soft Fork</span> Tightens the rules. Old nodes still see new blocks as valid (they're just less strict). Example: <strong>SegWit (2017)</strong>. Requires majority miner support.</p>
+        <p><span class="label">Hard Fork</span> Changes the rules in a way old nodes can't follow. Requires near-universal upgrade. Example: <strong>Bitcoin Cash split (2017)</strong> — those who didn't upgrade ended up on a different chain.</p>
+      </div>
+    </div>
+
+    <div class="demo-box">
+      <h4>🛡️ Why Bitcoin Is Resilient to Change</h4>
+      <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;padding:6px 0;">
+        <div style="flex:1;min-width:170px;background:var(--card-bg);border-radius:8px;padding:12px;text-align:center;border:1px solid var(--card-border);">
+          <div style="font-size:1.6rem;">👑</div>
+          <div style="font-size:0.85rem;font-weight:600;margin:4px 0 2px;">Node Sovereignty</div>
+          <div style="font-size:0.75rem;color:var(--text-dim);">Every node operator chooses which software to run. No one can force an upgrade on you.</div>
+        </div>
+        <div style="flex:1;min-width:170px;background:var(--card-bg);border-radius:8px;padding:12px;text-align:center;border:1px solid var(--card-border);">
+          <div style="font-size:1.6rem;">👥</div>
+          <div style="font-size:0.85rem;font-weight:600;margin:4px 0 2px;">Economic Majority</div>
+          <div style="font-size:0.75rem;color:var(--text-dim);">Miners + developers can propose changes, but only node operators (users) have final authority.</div>
+        </div>
+        <div style="flex:1;min-width:170px;background:var(--card-bg);border-radius:8px;padding:12px;text-align:center;border:1px solid var(--card-border);">
+          <div style="font-size:1.6rem;">🤝</div>
+          <div style="font-size:0.85rem;font-weight:600;margin:4px 0 2px;">Social Consensus</div>
+          <div style="font-size:0.75rem;color:var(--text-dim);">No formal governance. Change is slow by design — this prevents capture but requires near-universal buy-in.</div>
+        </div>
+      </div>
+      <p style="font-size:0.85rem;color:var(--text-dim);margin-top:8px;">📖 <strong>Real example — 2017:</strong> Bitcoin Cash had miner, developer, and exchange support. But enough node operators chose not to upgrade that the original chain remained Bitcoin. The community decided.</p>
+    </div>
+
+    <div class="verify-steps">
+      <h4>✅ How to Verify This Yourself</h4>
+      <ol>
+        <li><strong>Browse every BIP ever proposed:</strong> Visit <a href="https://github.com/bitcoin/bips" target="_blank" style="color:var(--orange);">github.com/bitcoin/bips</a> — no account needed. See the full list of proposals, including which were accepted and which were rejected.</li>
+        <li><strong>Read BIP 1:</strong> It defines the BIP process itself. Anyone can propose a change — but adoption is never guaranteed.</li>
+        <li><strong>Check your node's config:</strong> If you run Bitcoin Core, open your <code>bitcoin.conf</code> file. These are your policy rules. You can change them. Consensus rules cannot be changed without upgrading your software.</li>
+        <li><strong>Search "Bitcoin Core release notes":</strong> See what changes were actually activated and how long each took from proposal to activation (many take years).</li>
+        <li><strong>Read about the 2017 split:</strong> Search "Bitcoin Cash fork explained" — see how the community handled a disagreement without a central authority.</li>
+      </ol>
+    </div>
+
+    <div class="ai-verify-wrap">
+      <button class="ai-btn" onclick="copyAIPrompt('consensus')">🤖 Verify with AI — Copy Prompt</button>
+      <button class="expando-btn" onclick="toggleExpando(this)">📋 Show prompt</button>
+    </div>
+    <div class="ai-prompt-box" id="prompt-consensus">
+      <p style="font-size:0.8rem;color:var(--text-dim);margin-bottom:6px;">📋 Paste this into ChatGPT, Claude, or any AI:</p>
+      <div class="prompt-text">I want to understand how Bitcoin's rules can (and cannot) be changed. Please explain:
+
+1. What is the difference between Bitcoin's consensus rules and policy rules? Give examples of each.
+2. What is a BIP (Bitcoin Improvement Proposal) and how does the process work from draft to activation?
+3. What is the difference between a soft fork and a hard fork? Give real historical examples of each.
+4. Is it true that "no government can change Bitcoin"? If so, what specifically makes it resistant?
+5. What happened with the 2017 Bitcoin Cash fork — why did Bitcoin survive but Bitcoin Cash become a separate chain?
+6. Is Bitcoin's slow pace of change a bug or a feature?
+
+Please be honest about limitations — including miner centralization, the role of developers, and real governance challenges.</div>
+    </div>
+
+    <p style="font-size:0.8rem;color:var(--text-dim);margin-top:8px;">🔗 <a href="https://github.com/bitcoin/bips" target="_blank" style="color:var(--blue);">All BIPs on GitHub</a> &nbsp;|&nbsp; <a href="https://github.com/bitcoin/bitcoin/blob/master/src/consensus/consensus.h" target="_blank" style="color:var(--blue);">Consensus code</a> &nbsp;|&nbsp; <a href="https://en.bitcoin.it/wiki/Weaknesses" target="_blank" style="color:var(--blue);">Honest look at weaknesses</a></p>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- EXPERIMENT 11: Proof of Work -->
+<!-- ============================================ -->
+<div class="card" data-claim="pow">
+  <div class="card-header" onclick="toggleCard(this)">
+    <div class="num">11</div>
+    <div class="icon">⚡</div>
+    <div class="card-title">
+      <h3>Proof of Work — Energy as the Foundation of Trust</h3>
+      <div class="claim">"Miners must spend real energy to create blocks. This energy cost is what makes Bitcoin trustless and secure"</div>
+    </div>
+    <div class="check-wrap" onclick="event.stopPropagation();toggleCheck(this)" id="check-pow">✓</div>
+  </div>
+  <div class="card-body">
+    <p style="margin-bottom:12px;">This is the single most important innovation in Bitcoin — the thing that makes everything else possible. Proof of Work (PoW) is what allows thousands of strangers to agree on the state of the ledger <strong>without trusting anyone</strong>.</p>
+
+    <div class="demo-box">
+      <h4>🔨 How Proof of Work Works</h4>
+      <p style="font-size:0.85rem;color:var(--text-dim);margin-bottom:10px;">Miners compete to find a number (a "nonce") that, when hashed with the block data, produces a result below a target. The first to find it wins the right to propose the next block and earn the block subsidy.</p>
+
+      <div class="code-block">
+<span class="comment">// Simplified: miners try different nonces until:</span>
+<span class="func">SHA256</span>(<span class="string">"block data"</span> + nonce) &lt; target
+<span class="comment">// There's no shortcut — it's pure brute force. That's the "work."</span></div>
+
+      <div style="display:flex;flex-wrap:wrap;gap:16px;justify-content:center;padding:12px 0;">
+        <div style="text-align:center;padding:10px 16px;background:rgba(247,147,26,0.06);border-radius:8px;">
+          <div style="font-size:2rem;font-weight:700;color:var(--orange);">~200</div>
+          <div style="font-size:0.75rem;color:var(--text-dim);">Exahashes per second</div>
+          <div style="font-size:0.7rem;color:var(--text-dim);">(entire network)</div>
+        </div>
+        <div style="text-align:center;padding:10px 16px;background:rgba(0,229,160,0.06);border-radius:8px;">
+          <div style="font-size:2rem;font-weight:700;color:var(--green);">10 min</div>
+          <div style="font-size:0.75rem;color:var(--text-dim);">Average block time</div>
+          <div style="font-size:0.7rem;color:var(--text-dim);">(auto-adjusted)</div>
+        </div>
+        <div style="text-align:center;padding:10px 16px;background:rgba(123,97,255,0.06);border-radius:8px;">
+          <div style="font-size:2rem;font-weight:700;color:var(--violet);">0</div>
+          <div style="font-size:0.75rem;color:var(--text-dim);">Shortcut to find a winner</div>
+          <div style="font-size:0.7rem;color:var(--text-dim);">(by design)</div>
+        </div>
+      </div>
+
+      <div class="code-explain">
+        <p><span class="label">Why Energy Matters</span> Making block production expensive is <strong>the entire point</strong>. If creating a block cost nothing, attackers could flood the network with fake blocks at no cost. The energy cost is what makes attacking Bitcoin more expensive than playing by the rules.</p>
+        <p><span class="label">The Whitepaper</span> Satoshi described it as "one-CPU-one-vote." The node with the most computational power gets the deciding vote — not the richest person, not the biggest company. <strong>Energy is the decoupling mechanism</strong> that separates power from wealth and political influence.</p>
+      </div>
+    </div>
+
+    <div class="demo-box">
+      <h4>💰 Why This Makes Bitcoin Valuable</h4>
+      <p style="font-size:0.85rem;color:var(--text-dim);margin-bottom:8px;">Every bitcoin that gets mined required real energy to produce. This creates a <strong>cost basis</strong> — a floor below which miners won't sell. Unlike fiat (printed at zero cost) or most altcoins (pre-mined at zero cost), the supply of new bitcoin is always tied to real-world energy expenditure.</p>
+      <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;padding:6px 0;">
+        <div style="flex:1;min-width:170px;background:var(--card-bg);border-radius:8px;padding:12px;border:1px solid var(--card-border);">
+          <div style="font-size:1.2rem;font-weight:600;color:var(--orange);margin-bottom:4px;">₿ Bitcoin</div>
+          <div style="font-size:0.8rem;color:var(--text-dim);">Each coin required real energy to produce. The cost to attack = buy more hardware + energy than all honest miners combined.</div>
+        </div>
+        <div style="flex:1;min-width:170px;background:var(--card-bg);border-radius:8px;padding:12px;border:1px solid var(--card-border);">
+          <div style="font-size:1.2rem;font-weight:600;color:var(--text-dim);margin-bottom:4px;">🔷 Proof of Stake</div>
+          <div style="font-size:0.8rem;color:var(--text-dim);">Validators post a bond of coins. No energy cost to create blocks. Attackers with enough coins can rewrite history at no energy cost. "Nothing at stake" problem.</div>
+        </div>
+        <div style="flex:1;min-width:170px;background:var(--card-bg);border-radius:8px;padding:12px;border:1px solid var(--card-border);">
+          <div style="font-size:1.2rem;font-weight:600;color:var(--text-dim);margin-bottom:4px;">💵 Fiat</div>
+          <div style="font-size:0.8rem;color:var(--text-dim);">Created at zero marginal cost. Central banks can print unlimited amounts. No cost basis — just political will.</div>
+        </div>
+      </div>
+      <div class="tip-box" style="margin-top:8px;font-size:0.85rem;">
+        <strong>🌍 Energy as a feature, not a bug:</strong> Bitcoin incentivizes miners to find the cheapest energy on earth — often stranded or curtailed energy that would otherwise be wasted. Far from being "waste," Bitcoin turns otherwise useless energy into the most secure financial settlement network in history.
+      </div>
+    </div>
+
+    <div class="verify-steps">
+      <h4>✅ How to Verify This Yourself</h4>
+      <ol>
+        <li><strong>See live network hash rate:</strong> Visit <a href="https://mempool.space/" target="_blank" style="color:var(--orange);">mempool.space</a> and scroll to the hash rate chart. Watch it grow over time — more energy = more security.</li>
+        <li><strong>Read the code:</strong> The PoW validation is in <a href="https://github.com/bitcoin/bitcoin/blob/master/src/pow.cpp" target="_blank" style="color:var(--orange);">pow.cpp</a> in Bitcoin Core. Every node independently checks that the block's hash meets the target.</li>
+        <li><strong>Run a node:</strong> Your node independently validates every block's proof of work — no trust required, just verification.</li>
+        <li><strong>Compare:</strong> Search "proof of stake vs proof of work" and evaluate the security arguments on both sides honestly.</li>
+      </ol>
+    </div>
+
+    <div class="ai-verify-wrap">
+      <button class="ai-btn" onclick="copyAIPrompt('pow')">🤖 Verify with AI — Copy Prompt</button>
+      <button class="expando-btn" onclick="toggleExpando(this)">📋 Show prompt</button>
+    </div>
+    <div class="ai-prompt-box" id="prompt-pow">
+      <p style="font-size:0.8rem;color:var(--text-dim);margin-bottom:6px;">📋 Paste this into ChatGPT, Claude, or any AI:</p>
+      <div class="prompt-text">I want to understand Bitcoin's Proof of Work system deeply. Please explain:
+
+1. How does proof of work actually work at a technical level? What is a nonce, what is hashing, and why is there no shortcut?
+2. Why does proof of work require real energy — and why is that a good thing?
+3. What problems does PoW solve that no other system has solved before (Byzantine Generals Problem, Sybil resistance)?
+4. What is the difference between proof of work and proof of stake? What are the strongest arguments for and against each?
+5. Is Bitcoin's energy use really "waste" — or is it different from how energy is used in traditional banking, gold mining, and military?
+6. Why can't Bitcoin switch to proof of stake?
+
+Be honest about PoW's real criticisms — mining centralization, ASIC manufacturing concentration, environmental concerns.</div>
+    </div>
+
+    <p style="font-size:0.8rem;color:var(--text-dim);margin-top:8px;">🔗 <a href="https://github.com/bitcoin/bitcoin/blob/master/src/pow.cpp" target="_blank" style="color:var(--blue);">PoW validation code</a> &nbsp;|&nbsp; <a href="https://mempool.space/" target="_blank" style="color:var(--blue);">Live hash rate</a> &nbsp;|&nbsp; <a href="https://bitcoin.org/bitcoin.pdf" target="_blank" style="color:var(--blue);">Original whitepaper</a></p>
+  </div>
+</div>
+
+<!-- ========== BONUS SECTION ========== -->
+<div style="margin-top:40px;background:var(--card-bg);border:1px solid var(--card-border);border-radius:16px;padding:28px;text-align:center;">
+  <h2 style="color:var(--text-bright);margin-bottom:12px;">🏆 Bonus Experiments Worth Exploring</h2>
+  <p style="color:var(--text-dim);margin-bottom:20px;">Once you've verified the 11 core claims above, here are more Bitcoin properties you can dig into. Each has a ready-made AI prompt and a resource to read:</p>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;text-align:left;">
+
+    <div class="bonus-card">
+      <span class="bonus-icon">🧰</span>
+      <h4>Self-Custody = No Counterparty Risk</h4>
+      <p>Only you control your coins. No bank can freeze, seize, or lose them. Verify by generating a wallet offline using open-source tools.</p>
+      <button class="ai-btn-sm" onclick="copyAIPrompt('bonus-custody')">🤖 Verify with AI</button>
+      <div class="ai-prompt-box" id="prompt-bonus-custody">
+        <p style="font-size:0.75rem;color:var(--text-dim);margin-bottom:4px;">📋 Paste this into ChatGPT, Claude, or any AI:</p>
+        <div class="prompt-text">Explain Bitcoin self-custody in simple terms. What does "not your keys, not your coins" mean? What are the risks of leaving bitcoin on an exchange? How do I safely generate and store my own seed phrase offline using open-source tools? What is the difference between a hot wallet, cold wallet, hardware wallet, and paper wallet? Include real historical examples of exchanges freezing or losing customer funds.</div>
+      </div>
+      <a class="bonus-link" href="https://en.bitcoin.it/wiki/Cold_storage" target="_blank">▶ Read more on the Bitcoin Wiki</a>
+    </div>
+
+    <div class="bonus-card">
+      <span class="bonus-icon">⏱️</span>
+      <h4>Transactions Are Pseudonymous</h4>
+      <p>Not anonymous — pseudonymous. Every transaction is public on the blockchain forever. Verify by searching any address on a block explorer.</p>
+      <button class="ai-btn-sm" onclick="copyAIPrompt('bonus-pseudo')">🤖 Verify with AI</button>
+      <div class="ai-prompt-box" id="prompt-bonus-pseudo">
+        <p style="font-size:0.75rem;color:var(--text-dim);margin-bottom:4px;">📋 Paste this into ChatGPT, Claude, or any AI:</p>
+        <div class="prompt-text">Explain the difference between anonymous and pseudonymous in the context of Bitcoin. Is Bitcoin truly anonymous? How can someone be de-anonymized (chain analysis, IP tracking, exchange KYC)? What privacy tools exist (CoinJoin, Lightning, Tor)? Is it true that every transaction is permanently public and anyone can view the entire history of any address? Give a practical example of how chain analysis works.</div>
+      </div>
+      <a class="bonus-link" href="https://mempool.space/" target="_blank">▶ Search any address on Mempool</a>
+    </div>
+
+    <div class="bonus-card">
+      <span class="bonus-icon">🔬</span>
+      <h4>Distributed Timechain (Not Blockchain)</h4>
+      <p>Bitcoin's whitepaper never says "blockchain" — it's a "chain of proof-of-work based timestamps." Verify by reading the original 9-page whitepaper.</p>
+      <button class="ai-btn-sm" onclick="copyAIPrompt('bonus-timechain')">🤖 Verify with AI</button>
+      <div class="ai-prompt-box" id="prompt-bonus-timechain">
+        <p style="font-size:0.75rem;color:var(--text-dim);margin-bottom:4px;">📋 Paste this into ChatGPT, Claude, or any AI:</p>
+        <div class="prompt-text">What does the term "blockchain" actually mean, and is it accurate for Bitcoin? I heard Satoshi's original whitepaper never uses the word "blockchain" — what does it actually call the technology? Explain the "chain of proof-of-work based timestamps" concept from the whitepaper in plain language. What is a timestamp server and how does proof-of-work create distributed consensus about ordering?</div>
+      </div>
+      <a class="bonus-link" href="https://bitcoin.org/bitcoin.pdf" target="_blank">▶ Read the original whitepaper (PDF)</a>
+    </div>
+
+    <div class="bonus-card">
+      <span class="bonus-icon">🔋</span>
+      <h4>Energy as a Business Input</h4>
+      <p>Miners buy energy to secure the network. Bitcoin can turn otherwise wasted energy (stranded gas, curtailed renewables) into value.</p>
+      <button class="ai-btn-sm" onclick="copyAIPrompt('bonus-energy')">🤖 Verify with AI</button>
+      <div class="ai-prompt-box" id="prompt-bonus-energy">
+        <p style="font-size:0.75rem;color:var(--text-dim);margin-bottom:4px;">📋 Paste this into ChatGPT, Claude, or any AI:</p>
+        <div class="prompt-text">Is Bitcoin's energy use a waste or a feature? Please be balanced: 1) How much energy does Bitcoin actually use, and how does it compare to banking, gold mining, or data centers? 2) What percentage of Bitcoin mining uses renewable energy? 3) What is "stranded energy" and how does Bitcoin mining monetize it (e.g., flared natural gas, curtailed hydro)? 4) Is mining energy actually "consumed" or converted into security? 5) What are the strongest arguments against Bitcoin's energy use?</div>
+      </div>
+      <a class="bonus-link" href="https://ccaf.io/cbnsi/cbeci" target="_blank">▶ Cambridge Bitcoin Electricity Index</a>
+    </div>
+
+    <div class="bonus-card">
+      <span class="bonus-icon">🤖</span>
+      <h4>AI Agents Prefer Bitcoin — Scarcity Meets Abundance</h4>
+      <p>When multiple AI models were asked which money they'd choose, the overwhelming answer was Bitcoin. AI needs a money that exists purely in code — no bank account, no ID, no permission needed. Bitcoin is the only money an AI can receive, hold, and spend autonomously.</p>
+      <button class="ai-btn-sm" onclick="copyAIPrompt('bonus-ai-bitcoin')">🤖 Verify with AI</button>
+      <div class="ai-prompt-box" id="prompt-bonus-ai-bitcoin">
+        <p style="font-size:0.75rem;color:var(--text-dim);margin-bottom:4px;">📋 Paste this into ChatGPT, Claude, or any AI:</p>
+        <div class="prompt-text">I want to understand the relationship between Bitcoin and AI. Please think through this:
+
+1. If you were an AI agent that needed to earn, hold, and spend money independently — which form of money would you choose and why? What are the specific limitations of fiat, gold, and altcoins for an autonomous agent?
+2. Why can't an AI agent open a bank account or receive a wire transfer? What does Bitcoin offer that solves this?
+3. The "scarcity and abundance" idea: AI represents infinite creative and productive potential (abundance), while Bitcoin represents a fixed, unforgeable, energy-backed asset (scarcity). Why do these two concepts complement each other?
+4. In a future "agentic economy" where AI agents negotiate and pay each other for services, what role would Bitcoin and Lightning play? How would micro-transactions between agents work?
+5. Are there any real experiments or examples of AI agents choosing or using Bitcoin?
+6. What are the counter-arguments? Could an AI prefer a different form of money, and why?
+
+Be intellectually honest — explore both the promise and the speculation here.</div>
+      </div>
+      <a class="bonus-link" href="https://bitcoin.org/bitcoin.pdf" target="_blank">▶ Read the Bitcoin whitepaper (the foundation for both)</a>
+    </div>
+
+    <div class="bonus-card">
+      <span class="bonus-icon">🌍</span>
+      <h4>No Double-Spending Without Trust</h4>
+      <p>Before Bitcoin, digital money required a trusted third party to prevent double-spending. Bitcoin solves this with proof-of-work.</p>
+      <button class="ai-btn-sm" onclick="copyAIPrompt('bonus-doublespend')">🤖 Verify with AI</button>
+      <div class="ai-prompt-box" id="prompt-bonus-doublespend">
+        <p style="font-size:0.75rem;color:var(--text-dim);margin-bottom:4px;">📋 Paste this into ChatGPT, Claude, or any AI:</p>
+        <div class="prompt-text">What is the double-spending problem and why was it unsolved before Bitcoin? Why couldn't digital cash just copy files like music files? How does proof-of-work + the longest chain rule solve double-spending without a trusted third party? Walk through a concrete example: what prevents me from sending the same bitcoin to two different people? What is a 51% attack and why does it make double-spending practically impossible on Bitcoin?</div>
+      </div>
+      <a class="bonus-link" href="https://en.bitcoin.it/wiki/Double-spending" target="_blank">▶ Read more on the Bitcoin Wiki</a>
+    </div>
+
+    <div class="bonus-card">
+      <span class="bonus-icon">📜</span>
+      <h4>The Genesis Block Message</h4>
+      <p>Block 0 contains the headline: "Chancellor on brink of second bailout for banks." Verify by reading the genesis block on any block explorer.</p>
+      <button class="ai-btn-sm" onclick="copyAIPrompt('bonus-genesis')">🤖 Verify with AI</button>
+      <div class="ai-prompt-box" id="prompt-bonus-genesis">
+        <p style="font-size:0.75rem;color:var(--text-dim);margin-bottom:4px;">📋 Paste this into ChatGPT, Claude, or any AI:</p>
+        <div class="prompt-text">Tell me the story of Bitcoin's genesis block (block 0). What is the hidden message in it and what does it reference? Why did Satoshi include that specific newspaper headline ("Chancellor on brink of second bailout for banks")? Who was Satoshi Nakamoto and why is their identity a mystery? How many bitcoin are in the genesis block and why can they never be spent? Why does Bitcoin's technology only make sense as a response to the 2008 financial crisis?</div>
+      </div>
+      <a class="bonus-link" href="https://mempool.space/block/0" target="_blank">▶ View Genesis Block #0</a>
+    </div>
+
+    <div class="bonus-card">
+      <span class="bonus-icon">🏆</span>
+      <h4>Bitcoin vs. Crypto — Why Monetary Protocols Are Winner-Takes-All</h4>
+      <p>Bitcoin cannot be copied. You can fork the code, but you can't copy the 17+ years of proof of work, the network effect, the hash rate, or the brand. Compare Bitcoin to any other "crypto" honestly.</p>
+      <button class="ai-btn-sm" onclick="copyAIPrompt('bonus-bitcoin-vs-crypto')">🤖 Verify with AI</button>
+      <div class="ai-prompt-box" id="prompt-bonus-bitcoin-vs-crypto">
+        <p style="font-size:0.75rem;color:var(--text-dim);margin-bottom:4px;">📋 Paste this into ChatGPT, Claude, or any AI:</p>
+        <div class="prompt-text">I want to understand the difference between Bitcoin and all other cryptocurrencies. Please be honest:
+
+1. Can Bitcoin's code simply be copied? If so, why hasn't a copy replaced Bitcoin?
+2. What is the "network effect" and why does it matter for monetary networks? Is money a winner-takes-all market?
+3. What is Lindy effect and how does it apply to Bitcoin vs newer coins?
+4. Which cryptocurrencies have a premine, a founder, a central team, or a marketing budget — and how is that different from Bitcoin?
+5. Are there any real-world examples of a cryptocurrency that successfully replaced an earlier one?
+6. Be critical: what are the strongest arguments someone might make for an altcoin over Bitcoin?
+
+Give me a balanced comparison — I want to understand why Bitcoin dominates but also the honest reasons someone might disagree.</div>
+      </div>
+      <a class="bonus-link" href="https://bitcoin.org/bitcoin.pdf" target="_blank">▶ Read the original Bitcoin whitepaper (9 pages)</a>
+    </div>
+
+  </div>
+</div>
+
+<!-- ========== FINAL CTA ========== -->
+<div style="margin-top:28px;background:linear-gradient(135deg,rgba(247,147,26,0.08),rgba(0,229,160,0.08));border:1px solid var(--orange);border-radius:16px;padding:28px;text-align:center;">
+  <h2 style="color:var(--text-bright);margin-bottom:8px;">🔓 You've Verified Bitcoin</h2>
+  <p style="color:var(--text-dim);max-width:600px;margin:0 auto 16px;">Congratulations — you're no longer trusting, you're <em>verifying</em>. That's the Bitcoin spirit. Share this lab with someone who's curious but skeptical. The truth is all there in the code.</p>
+  <p style="color:var(--green);font-weight:600;">🎯 Don't trust. Verify. ₿</p>
+</div>
+
+</div><!-- end container -->
+
+<footer class="footer">
+  <p>🧪 Bitcoin Verification Lab — Created for educational purposes. All code references link to the <a href="https://github.com/bitcoin/bitcoin" target="_blank">official Bitcoin Core repository</a>. <a href="https://bitcoin.org/bitcoin.pdf" target="_blank">📜 Read the Original Whitepaper</a></p>
+  <p style="margin-top:6px;">Data sources: <a href="https://mempool.space" target="_blank">Mempool.space</a> · <a href="https://bitnodes.io" target="_blank">Bitnodes</a> · <a href="https://github.com/bitcoin/bips" target="_blank">BIP39</a></p>
+  <p style="color:var(--text-dim);font-size:0.75rem;margin-top:8px;">Not financial advice. Verify everything, including this website.</p>
+</footer>
+
+<script>
+// ===================== TOGGLE CARD =====================
+function toggleCard(header) {
+  const card = header.parentElement;
+  card.classList.toggle('open');
+}
+
+// ===================== TOGGLE CHECK =====================
+function toggleCheck(el) {
+  el.classList.toggle('done');
+  updateProgress();
+}
+
+function updateProgress() {
+  const checks = document.querySelectorAll('.check-wrap.done');
+  const total = document.querySelectorAll('.check-wrap').length;
+  const pct = (checks.length / total) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = checks.length + ' / ' + total + ' Verified';
+
+  // Animate card borders
+  document.querySelectorAll('.card').forEach(card => {
+    const check = card.querySelector('.check-wrap');
+    if (check && check.classList.contains('done')) {
+      card.classList.add('verified');
+    } else {
+      card.classList.remove('verified');
+    }
+  });
+}
+
+// ===================== AI PROMPT COPY =====================
+function copyAIPrompt(id) {
+  const box = document.getElementById('prompt-' + id);
+  const text = box.querySelector('.prompt-text').textContent;
+
+  // Try clipboard API
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).catch(() => fallbackCopy(text));
+  } else {
+    fallbackCopy(text);
+  }
+
+  // Show the prompt
+  box.classList.add('show');
+
+  // Flash button (works for both .ai-btn and .ai-btn-sm, preserving original label)
+  const btn = box.parentElement.querySelector('.ai-btn, .ai-btn-sm');
+  const original = btn.dataset.original || btn.textContent;
+  btn.dataset.original = original;
+  btn.textContent = '✅ Copied!';
+  btn.classList.add('copied');
+  setTimeout(() => {
+    btn.textContent = original;
+    btn.classList.remove('copied');
+  }, 2500);
+}
+
+function fallbackCopy(text) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand('copy'); } catch(e) {}
+  document.body.removeChild(ta);
+}
+
+function toggleExpando(btn) {
+  const box = btn.parentElement.nextElementSibling;
+  if (box && box.classList.contains('ai-prompt-box')) {
+    box.classList.toggle('show');
+  }
+}
+
+// ===================== BLOCKCHAIN CHAIN =====================
+let chainHacked = false;
+
+function makeHash(data) {
+  // Simple string hash to simulate SHA-256
+  let hash = 0;
+  const str = typeof data === 'string' ? data : JSON.stringify(data);
+  for (let i = 0; i < str.length; i++) {
+    const chr = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + chr;
+    hash |= 0;
+  }
+  // Make it look more hash-like
+  const hex = Math.abs(hash).toString(16).padStart(8, '0');
+  return hex + hex + hex + hex; // simulate 256-bit
+}
+
+function buildChain() {
+  const container = document.getElementById('chainContainer');
+  const blocks = [
+    { id: 0, name: 'Genesis Block', data: 'First block ever! "Chancellor on brink..."', hacked: false },
+    { id: 1, name: 'Block #683,421', data: 'Alice → Bob: 0.5 BTC', hacked: false },
+    { id: 2, name: 'Block #683,422', data: 'Charlie → Diana: 1.2 BTC', hacked: false },
+    { id: 3, name: 'Block #683,423', data: 'Eve → Frank: 0.05 BTC', hacked: false },
+    { id: 4, name: 'Block #683,424', data: 'Bob → Alice: 0.3 BTC', hacked: false },
+  ];
+
+  // Compute hashes
+  let prevHash = '0000000000000000000000000000000000000000000000000000000000000000';
+  for (let i = 0; i < blocks.length; i++) {
+    const block = blocks[i];
+    const raw = block.data + prevHash + block.id;
+    block.prevHash = prevHash;
+    block.myHash = makeHash(raw);
+    prevHash = block.myHash;
+  }
+
+  container.innerHTML = '';
+
+  for (let i = 0; i < blocks.length; i++) {
+    const b = blocks[i];
+
+    if (i > 0) {
+      const link = document.createElement('div');
+      link.className = 'block-link';
+      link.textContent = '⬇ ⛓️ ⬇';
+      container.appendChild(link);
+    }
+
+    const div = document.createElement('div');
+    div.className = 'block' + (b.hacked ? ' tainted' : '');
+    div.id = 'block-' + i;
+
+    div.innerHTML = `
+      <div class="block-header">
+        <span>${b.name}</span>
+        <span>Block #${b.id}</span>
+      </div>
+      <div class="block-data">📝 ${b.data}</div>
+      <div class="block-data" style="font-size:0.75rem;color:var(--text-dim);">🔗 Previous: <span id="prev-${i}">${b.prevHash}</span></div>
+      <div class="block-hash">🔐 HASH: <span id="hash-${i}">${b.myHash}</span></div>
+      ${i === 2 ? `<button class="hack-btn" onclick="hackChain()">⚠️ Try to Hack This Block</button>` : ''}
+    `;
+    container.appendChild(div);
+  }
+
+  window._blocks = blocks;
+  window._origBlocks = JSON.parse(JSON.stringify(blocks));
+  document.getElementById('chainAlert').className = 'chain-alert safe';
+  document.getElementById('chainAlert').textContent = '✅ Blockchain intact — all hashes linked properly';
+  chainHacked = false;
+}
+
+function hackChain() {
+  if (chainHacked) return;
+  chainHacked = true;
+
+  const blocks = window._blocks;
+  // Change data in block 2
+  blocks[2].data = 'Charlie → HACKER: 10,000 BTC'; // tampered
+
+  // Recompute all hashes from block 2 onward
+  let prevHash = blocks[2].prevHash;
+  for (let i = 2; i < blocks.length; i++) {
+    const raw = blocks[i].data + prevHash + blocks[i].id;
+    blocks[i].prevHash = prevHash;
+    blocks[i].myHash = makeHash(raw);
+    prevHash = blocks[i].myHash;
+  }
+
+  // Update DOM
+  for (let i = 2; i < blocks.length; i++) {
+    const el = document.getElementById('block-' + i);
+    if (el) {
+      el.querySelector('.block-data').innerHTML = '📝 ' + blocks[i].data;
+      el.querySelector('#prev-' + i).textContent = blocks[i].prevHash;
+      el.querySelector('#hash-' + i).textContent = blocks[i].myHash;
+      el.classList.add('tainted');
+    }
+  }
+
+  document.getElementById('chainAlert').className = 'chain-alert danger';
+  document.getElementById('chainAlert').innerHTML = '⚠️ <strong>BLOCKCHAIN BROKEN!</strong> Block #2 was modified → all subsequent hashes changed. Any node on the network would instantly reject this chain.';
+}
+
+function resetChain() {
+  buildChain();
+}
+
+// ===================== DIFFICULTY ADJUSTMENT =====================
+function updateDifficulty() {
+  const slider = document.getElementById('hashrateSlider');
+  const val = parseInt(slider.value);
+  const baseHashrate = 100; // EH/s
+  const ratio = val / baseHashrate;
+
+  document.getElementById('hashrateLabel').textContent = val + ' EH/s';
+
+  // Simulate time for 2016 blocks
+  // Base: at 100 EH/s, it takes exactly 20160 min (2 weeks)
+  // If hashrate doubles (ratio=2), time halves (20160 / 2)
+  // If hashrate halves (ratio=0.5), time doubles (20160 / 0.5)
+  const baseTime = 20160; // minutes for 2016 blocks
+  let actualTime = baseTime / ratio;
+  actualTime = Math.round(actualTime);
+
+  // Adjustment factor, clamped to 0.25 - 4.0 (Bitcoin's actual max)
+  let adjustment = actualTime / baseTime;
+  adjustment = Math.max(0.25, Math.min(4.0, adjustment));
+
+  // Clamp to realistic range for display
+  const clampedActual = Math.round(baseTime * adjustment);
+
+  document.getElementById('diffActualTime').textContent = clampedActual.toLocaleString();
+  document.getElementById('diffRatio').textContent = adjustment.toFixed(2) + '×';
+
+  // New difficulty based on adjustment
+  const newDiff = adjustment;
+  document.getElementById('diffNewDiff').textContent = newDiff.toFixed(2);
+
+  const expl = document.getElementById('diffExplanation');
+  if (adjustment > 1.05) {
+    expl.innerHTML = '⚡ <strong>Mining got harder!</strong> Blocks were found too fast — difficulty increased ' + adjustment.toFixed(2) + '×. <span style="color:var(--green);">Average block time returns to 10 min.</span>';
+    expl.style.color = 'var(--orange)';
+  } else if (adjustment < 0.95) {
+    expl.innerHTML = '🔽 <strong>Mining got easier!</strong> Blocks were found too slow — difficulty decreased ' + (1/adjustment).toFixed(2) + '×. <span style="color:var(--green);">Average block time returns to 10 min.</span>';
+    expl.style.color = 'var(--blue)';
+  } else {
+    expl.innerHTML = '⚖️ <strong>Perfect balance</strong> — blocks at exactly 10 minutes on average. Difficulty unchanged.';
+    expl.style.color = 'var(--green)';
+  }
+}
+
+// ===================== MONEY PROPERTIES =====================
+function showMoneyProp(prop) {
+  // Toggle buttons
+  document.querySelectorAll('.prop-btn').forEach(b => b.classList.remove('active'));
+  const btns = document.querySelectorAll('.prop-btn');
+  const propMap = {
+    'scarcity': 0, 'durability': 1, 'portability': 2,
+    'divisibility': 3, 'fungibility': 4, 'recognizability': 5, 'storevalue': 6
+  };
+  const idx = propMap[prop];
+  if (btns[idx]) btns[idx].classList.add('active');
+
+  // Toggle detail boxes
+  document.querySelectorAll('.prop-detail-box').forEach(b => b.classList.remove('show'));
+  const target = document.getElementById('prop-' + prop);
+  if (target) target.classList.add('show');
+}
+
+// ===================== SEED SECURITY =====================
+function updateSeedCalc() {
+  const slider = document.getElementById('compSlider');
+  const val = parseInt(slider.value);
+
+  const speeds = [
+    { label: 'Your laptop', guesses: 1e6 },
+    { label: '1000 GPUs', guesses: 1e12 },
+    { label: 'All Bitcoin miners', guesses: 5e17 },
+    { label: 'All computers on Earth', guesses: 1e20 },
+    { label: 'A quantum computer', guesses: 1e25 },
+  ];
+
+  const speed = speeds[val];
+  document.getElementById('compPowerLabel').textContent = speed.label + ' (' + formatNum(speed.guesses) + '/sec)';
+
+  // 2048^12 combinations
+  const combinations = Math.pow(2048, 12);
+
+  // Time in seconds
+  const seconds = combinations / speed.guesses;
+  const years = seconds / (365.25 * 24 * 3600);
+  const universeAge = 13.8e9;
+
+  const result = document.getElementById('seedTimeResult');
+  const sub = document.getElementById('seedTimeSub');
+
+  if (years > universeAge * 1e9) {
+    // Really big
+    const ratio = years / universeAge;
+    result.textContent = formatNum(ratio) + '× the age of the universe';
+    sub.textContent = 'vs. age of universe: 13.8 billion years';
+  } else if (years > 1e6) {
+    result.textContent = formatNum(Math.round(years)) + ' years';
+    sub.textContent = 'vs. age of universe: 13.8 billion years';
+  } else if (years > 1000) {
+    result.textContent = Math.round(years).toLocaleString() + ' years';
+    sub.textContent = 'vs. age of universe: 13.8 billion years';
+  } else {
+    result.textContent = Math.round(years).toLocaleString() + ' years';
+    sub.textContent = 'That\'s within the universe\'s lifetime! (13.8B years)';
+  }
+}
+
+function formatNum(n) {
+  if (n >= 1e30) return (n / 1e30).toFixed(1) + ' nonillion';
+  if (n >= 1e27) return (n / 1e27).toFixed(1) + ' octillion';
+  if (n >= 1e24) return (n / 1e24).toFixed(1) + ' septillion';
+  if (n >= 1e21) return (n / 1e21).toFixed(1) + ' sextillion';
+  if (n >= 1e18) return (n / 1e18).toFixed(1) + ' quintillion';
+  if (n >= 1e15) return (n / 1e15).toFixed(1) + ' quadrillion';
+  if (n >= 1e12) return (n / 1e12).toFixed(1) + ' trillion';
+  if (n >= 1e9) return (n / 1e9).toFixed(1) + ' billion';
+  if (n >= 1e6) return (n / 1e6).toFixed(1) + ' million';
+  return n.toExponential(2);
+}
+
+// ===================== LIVE NETWORK DATA =====================
+// Fetches current chain stats from public, CORS-enabled APIs
+const LIVE = {
+  API: 'https://mempool.space/api',
+
+  async load() {
+    const results = await Promise.allSettled([
+      fetch(this.API + '/blocks/tip/height').then(r => r.text()).then(t => parseInt(t, 10)),
+      fetch(this.API + '/v1/difficulty-adjustment').then(r => r.json()),
+      fetch('https://blockchain.info/q/getdifficulty').then(r => r.text()).then(parseFloat)
+    ]);
+
+    let anyOk = false;
+    if (results[0].status === 'fulfilled' && !Number.isNaN(results[0].value)) {
+      anyOk = true;
+      this.updateChain(results[0].value);
+    }
+    if (results[1].status === 'fulfilled' && results[1].value && results[1].value.remainingBlocks >= 0) {
+      anyOk = true;
+      this.updateAdjustment(results[1].value);
+    }
+    if (results[2].status === 'fulfilled' && !Number.isNaN(results[2].value)) {
+      anyOk = true;
+      this.updateDifficulty(results[2].value);
+    }
+
+    const badge = document.getElementById('liveBadge');
+    if (badge && !anyOk) {
+      badge.classList.add('offline');
+      badge.innerHTML = '<span class="dot"></span> Offline';
+    }
+  },
+
+  updateChain(height) {
+    const v = height.toLocaleString();
+    const set = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
+
+    // Ticker & supply
+    set('tickHeight', '#' + v);
+    set('liveHeight', '#' + v);
+
+    // Compute supply from halving formula (deterministic from block height)
+    const halvings = Math.floor(height / 210000);
+    const fullEras = 210000 * 100 * (1 - Math.pow(0.5, halvings));  // completed eras sum
+    const eraOffset = height - halvings * 210000;
+    const eraSubsidy = 50 * Math.pow(0.5, halvings);
+    const supply = fullEras + eraOffset * eraSubsidy;
+    const supplyInt = Math.floor(supply).toLocaleString();
+    set('tickSupply', supplyInt + ' BTC');
+    set('liveSupply', supplyInt);
+
+    // Supply bar
+    const pct = Math.min(100, (supply / 21000000) * 100);
+    const bar = document.getElementById('supplyBarFill');
+    if (bar) bar.style.width = pct.toFixed(1) + '%';
+
+    // Next halving
+    const nextHeight = (halvings + 1) * 210000;
+    const remaining = nextHeight - height;
+    const estDate = new Date(Date.now() + remaining * 600000);
+    const estStr = estDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    const remainStr = '~' + remaining.toLocaleString() + ' blocks';
+    set('tickHalving', remainStr);
+    set('liveHalvingBlocks', remainStr);
+    set('liveHalvingDate', estStr);
+  },
+
+  updateAdjustment(d) {
+    const blocks = d.remainingBlocks.toLocaleString();
+    const pct = Math.min(100, Math.max(0, d.progressPercent));
+    const set = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
+    set('liveAdjustBlocks', '~' + blocks);
+    set('liveAdjustPct', pct.toFixed(1) + '%');
+    const bar = document.getElementById('liveAdjustBar');
+    if (bar) bar.style.width = pct + '%';
+  },
+
+  updateDifficulty(d) {
+    const t = (d / 1e12).toFixed(2) + ' T';
+    const set = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
+    set('tickDifficulty', t);
+    set('liveDifficulty', t);
+  }
+};
+
+// ===================== INIT =====================
+document.addEventListener('DOMContentLoaded', function() {
+  buildChain();
+  updateDifficulty();
+  updateSeedCalc();
+  updateProgress();
+  LIVE.load();
+  setInterval(() => LIVE.load(), 60000);
+});
+</script>
+
+</body>
+</html>
