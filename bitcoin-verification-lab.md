@@ -451,4 +451,4 @@ Links: [Bitcoin Whitepaper](https://bitcoin.org/bitcoin.pdf) | [US M2 Money Supp
 
 ---
 
-Created by Casey Karlow. Live data from mempool.space. Source code references from Bitcoin Core (MIT license).
+Created by Casey. Live data from mempool.space. Source code references from Bitcoin Core (MIT license).
